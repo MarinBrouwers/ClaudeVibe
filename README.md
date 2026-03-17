@@ -4,8 +4,6 @@ A pixel art idle fishing game that reacts to [Claude Code](https://claude.ai/cod
 
 Every time Claude uses a tool — reading a file, running a search, executing code — a fish appears and you reel it in. The harder Claude works, the more you catch.
 
-![ClaudeVibe screenshot](screenshot.png)
-
 ---
 
 ## What is this?
@@ -18,6 +16,7 @@ ClaudeVibe sits in the corner of your screen while you work with Claude Code. It
 - **Lures vs bobbers** → different gear, different fishing styles
 - **Shop** → spend coins on hats, boats, rods, bobbers, and lures
 - **Achievements & daily challenges** → keep you coming back
+- **Dark & light theme** → toggle with the ☀️ button
 
 ---
 
@@ -26,33 +25,56 @@ ClaudeVibe sits in the corner of your screen while you work with Claude Code. It
 - [Claude Code](https://claude.ai/code) installed and running
 - [Node.js](https://nodejs.org) (v18 or later)
 
-That's it. No API key needed.
+No API key needed. ClaudeVibe does not call the Anthropic API.
 
 ---
 
 ## Installation
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/claudevibe.git
-cd claudevibe
-
-# 2. Install dependencies
+git clone https://github.com/MarinBrouwers/ClaudeVibe.git
+cd ClaudeVibe
 npm install
-
-# 3. Start the game
 npm start
 ```
 
-The window will appear in the top-right corner of your screen. Start chatting with Claude Code and watch the fish come in.
+After the first install, just run `npm start` from the ClaudeVibe folder to open the game.
 
 ---
 
-## How it works
+## Starting from Claude Code
 
-ClaudeVibe uses [Claude Code hooks](https://docs.anthropic.com/en/docs/claude-code/hooks) to listen for tool use events. Every tool call Claude makes (Read, Grep, Bash, Edit, etc.) triggers a fish spawn in the game.
+On first launch, ClaudeVibe installs a `/claudevibe` slash command. After that you can type `/claudevibe` in any Claude Code session to launch the game directly.
 
-The hook is configured in `hook-handler.js` and registered automatically when you run the app.
+---
+
+## What ClaudeVibe does to your system
+
+ClaudeVibe is transparent about what it touches on first launch:
+
+### 1. `~/.claude/settings.json` — hook registration
+ClaudeVibe adds two entries to your Claude Code hooks:
+
+- **PostToolUse** — fires after each tool call (Read, Grep, Bash, Edit, etc.) → spawns a fish
+- **Stop** — fires when Claude finishes a response → triggers a cast animation
+
+These hooks run `node hook-handler.js` which only appends a small JSON line to a temp file and exits immediately. **Claude Code is never blocked or delayed.** No data is sent anywhere.
+
+To remove the hooks, open `~/.claude/settings.json` and delete the entries containing `hook-handler`.
+
+### 2. `~/.claude/commands/claudevibe.md` — slash command
+Installs a `/claudevibe` slash command so you can launch the game from inside Claude Code. This is just a markdown file.
+
+To remove it, delete `~/.claude/commands/claudevibe.md`.
+
+### 3. A temp queue file
+ClaudeVibe uses a file at `[system temp]/claudevibe-queue.jsonl` to pass events from the hook to the game. It is cleared on every launch and contains nothing sensitive — just tool names like `"Read"` or `"Bash"`.
+
+### 4. Save data
+Your progress (level, coins, fish caught, cosmetics) is saved to:
+- Windows: `%APPDATA%\claudevibe\save.json`
+- macOS: `~/Library/Application Support/claudevibe/save.json`
+- Linux: `~/.config/claudevibe/save.json`
 
 ---
 
@@ -84,9 +106,12 @@ Items unlock at higher levels — check the `LVL X` badge on each item.
 
 ---
 
-## Themes
+## Uninstall
 
-ClaudeVibe comes with a dark theme (default) and a light theme. Toggle with the ☀️ button in the bottom bar. Your preference is saved.
+1. Delete the ClaudeVibe folder
+2. Remove the hook entries from `~/.claude/settings.json`
+3. Delete `~/.claude/commands/claudevibe.md`
+4. Optionally delete your save data from the path listed above
 
 ---
 

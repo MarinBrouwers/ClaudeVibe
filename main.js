@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-const QUEUE = path.join(os.tmpdir(), 'claude-fisher-queue.jsonl');
+const QUEUE = path.join(os.tmpdir(), 'claudevibe-queue.jsonl');
 
 // Only one instance allowed
 const gotLock = app.requestSingleInstanceLock();
@@ -33,6 +33,68 @@ function createWindow() {
   // Position bottom-right of screen
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   mainWindow.setPosition(width - 476, height - 616);
+}
+
+// ── Hook auto-registration ────────────────────────────────────────────────────
+// Automatically adds ClaudeVibe hooks to ~/.claude/settings.json on startup.
+
+function registerHooks() {
+  const hookScript = path.join(__dirname, 'hook-handler.js').replace(/\\/g, '/');
+  const settingsPath = path.join(os.homedir(), '.claude', 'settings.json');
+
+  let settings = {};
+  try { settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8')); } catch (_) {}
+
+  if (!settings.hooks) settings.hooks = {};
+
+  const makeHook = (eventType) => ({
+    matcher: '',
+    hooks: [{ type: 'command', command: `node "${hookScript}" ${eventType}` }],
+  });
+
+  // PostToolUse — fires after each tool call
+  if (!settings.hooks.PostToolUse) settings.hooks.PostToolUse = [];
+  const hasPostTool = settings.hooks.PostToolUse.some(h =>
+    h.hooks && h.hooks.some(hh => hh.command && hh.command.includes('claudevibe') || hh.command && hh.command.includes('hook-handler')));
+  if (!hasPostTool) settings.hooks.PostToolUse.push(makeHook('tool_use'));
+
+  // Stop — fires when Claude finishes responding
+  if (!settings.hooks.Stop) settings.hooks.Stop = [];
+  const hasStop = settings.hooks.Stop.some(h =>
+    h.hooks && h.hooks.some(hh => hh.command && hh.command.includes('claudevibe') || hh.command && hh.command.includes('hook-handler')));
+  if (!hasStop) settings.hooks.Stop.push(makeHook('done'));
+
+  try {
+    fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+  } catch (_) {}
+}
+
+// ── Slash command auto-install ────────────────────────────────────────────────
+// Installs /claudevibe slash command into ~/.claude/commands/
+
+function installSlashCommand() {
+  const commandsDir = path.join(os.homedir(), '.claude', 'commands');
+  const commandFile = path.join(commandsDir, 'claudevibe.md');
+  const appDir = __dirname.replace(/\\/g, '/');
+
+  const content = `Launch the ClaudeVibe fishing game — a pixel art idle game that reacts to your Claude Code activity in real time.
+
+Run this command to start ClaudeVibe:
+
+\`\`\`bash
+cd "${appDir}" && npm start
+\`\`\`
+
+ClaudeVibe will open in the corner of your screen and start fishing whenever you use Claude Code tools.
+`;
+
+  try {
+    fs.mkdirSync(commandsDir, { recursive: true });
+    if (!fs.existsSync(commandFile)) {
+      fs.writeFileSync(commandFile, content, 'utf-8');
+    }
+  } catch (_) {}
 }
 
 // ── Queue poller ──────────────────────────────────────────────────────────────
@@ -87,6 +149,8 @@ app.on('second-instance', () => {
 });
 
 app.whenReady().then(() => {
+  registerHooks();
+  installSlashCommand();
   createWindow();
   startQueuePoller();
 });

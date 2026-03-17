@@ -6,7 +6,7 @@ const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
 
-const QUEUE = path.join(os.tmpdir(), 'claude-fisher-queue.jsonl');
+const QUEUE = path.join(os.tmpdir(), 'claudevibe-queue.jsonl');
 
 const eventType = process.argv[2] || 'event';
 let body = '';
