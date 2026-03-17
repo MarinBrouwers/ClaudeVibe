@@ -21,6 +21,8 @@ ClaudeVibe sits in the corner of your screen while you work with Claude Code. It
 - **Achievements & daily challenges** → keep you coming back
 - **Dark & light theme** → toggle with the ☀️ button
 
+<img width="460" height="600" alt="image" src="https://github.com/user-attachments/assets/bddd087f-c983-4e41-92fb-0e6ff6c745e5" />
+
 ---
 
 ## Requirements
