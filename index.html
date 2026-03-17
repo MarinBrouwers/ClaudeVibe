@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClaudeVibe</title>
+  <style>
+    :root {
+      --bg:           #0c0e1a;
+      --panel:        #080910;
+      --panel-hover:  #0d0f1e;
+      --panel-equip:  #0a0c1a;
+      --btn:          #0e1228;
+      --btn-hover:    #141830;
+      --border:       #1e1e3a;
+      --border-sub:   #14152a;
+      --border-item:  #0e0e20;
+      --border-acc:   #2a2a5a;
+      --text:         #c0c0e8;
+      --text2:        #8888bb;
+      --text3:        #5050a0;
+      --text4:        #3a3a5a;
+      --accent:       #4a8fff;
+      --accent-dim:   #4a8fff55;
+      --prog-bg:      #1a1a3a;
+      --scrollbar:    #2a2a5a;
+      --tip-bg:       #0e1020;
+    }
+    [data-theme="light"] {
+      --bg:           #eef2f8;
+      --panel:        #ffffff;
+      --panel-hover:  #f4f7fd;
+      --panel-equip:  #edf3ff;
+      --btn:          #e6eef8;
+      --btn-hover:    #d8e4f4;
+      --border:       #ccd4e8;
+      --border-sub:   #d8e0f0;
+      --border-item:  #e8eef8;
+      --border-acc:   #9aaed0;
+      --text:         #2a3460;
+      --text2:        #4a5a88;
+      --text3:        #7888aa;
+      --text4:        #a8b4cc;
+      --accent:       #2563d8;
+      --accent-dim:   #2563d855;
+      --prog-bg:      #d0daea;
+      --scrollbar:    #b0bcd4;
+      --tip-bg:       #ffffff;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 460px; height: 600px;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Courier New', monospace;
+      user-select: none;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+    }
+
+    /* Thin draggable titlebar */
+    #titlebar {
+      height: 24px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border-sub);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      -webkit-app-region: drag;
+      flex-shrink: 0;
+    }
+    #titlebar .title {
+      font-size: 10px;
+      color: var(--text2);
+      letter-spacing: 0.12em;
+    }
+    #titlebar .dot { color: var(--accent); margin-right: 5px; }
+    #win-controls {
+      margin-left: auto;
+      display: flex;
+      gap: 5px;
+      -webkit-app-region: no-drag;
+    }
+    .wbtn {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.1s;
+    }
+    .wbtn:hover { opacity: 1; }
+    .wbtn.min { background: #f1c40f; }
+    .wbtn.cls { background: #e74c3c; }
+
+    /* Canvas fills remaining space */
+    #game-canvas {
+      flex: 1;
+      display: block;
+      width: 460px;
+    }
+
+    #topbar {
+      height: 28px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border-sub);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text3);
+      flex-shrink: 0;
+    }
+    #topbar .val { color: var(--accent); }
+    #xp-wrap { flex: 1; height: 2px; background: var(--border-sub); border-radius: 1px; overflow: hidden; }
+    #xp-fill { height: 100%; background: var(--accent); border-radius: 1px; transition: width 0.4s; }
+    #mood-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #7ec8e3;
+      transition: background 0.5s;
+      flex-shrink: 0;
+    }
+    #s-coins-wrap { color: #f1c40f; font-size: 12px; white-space: nowrap; }
+    #btn-shop {
+      background: none; border: 1px solid var(--border-acc); border-radius: 3px;
+      cursor: pointer; font-size: 12px; padding: 1px 5px; color: var(--text2);
+      line-height: 1; transition: border-color 0.1s, color 0.1s;
+    }
+    #btn-shop:hover { border-color: var(--accent); color: var(--text); }
+    #stats {
+      height: 32px;
+      background: var(--panel);
+      border-top: 1px solid var(--border-sub);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    #btn-mute, #btn-music, #btn-quests, #btn-lib, #btn-challenges, #btn-theme {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 1px 5px;
+      line-height: 1;
+      opacity: 0.65;
+      transition: opacity 0.1s, border-color 0.1s;
+      color: var(--text2);
+      position: relative;
+    }
+    #btn-mute:hover, #btn-music:hover, #btn-quests:hover, #btn-lib:hover, #btn-challenges:hover, #btn-theme:hover { opacity: 1; }
+    #btn-mute.active, #btn-music.active { opacity: 1; border-color: var(--accent-dim); color: var(--text); }
+    #btn-mute.muted, #btn-music.muted  { opacity: 0.3; }
+
+    [data-tip] { position: relative; }
+    [data-tip]::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--tip-bg);
+      border: 1px solid var(--border-acc);
+      color: var(--text);
+      font-size: 10px;
+      white-space: nowrap;
+      padding: 3px 7px;
+      border-radius: 3px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      letter-spacing: 0.05em;
+      font-family: 'Courier New', monospace;
+      z-index: 50;
+    }
+    [data-tip]:hover::after { opacity: 1; }
+
+    #achievement-toast {
+      position: absolute;
+      top: 80px;
+      right: 10px;
+      background: var(--tip-bg);
+      border: 1px solid var(--accent-dim);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 30;
+      max-width: 220px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    #achievement-toast.show { opacity: 1; transform: translateY(0); }
+    #toast-icon { font-size: 18px; }
+    #toast-text { font-size: 11px; color: var(--text); letter-spacing: 0.05em; line-height: 1.4; }
+    #toast-xp   { font-size: 11px; color: var(--accent); white-space: nowrap; }
+
+    #quest-panel {
+      display: none;
+      position: absolute;
+      bottom: 44px;
+      left: 0; right: 0;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 8px 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 20;
+    }
+    #quest-panel.visible { display: flex; }
+    #quest-panel::-webkit-scrollbar { width: 4px; }
+    #quest-panel::-webkit-scrollbar-track { background: var(--panel); }
+    #quest-panel::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
+    #quest-panel::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    .quest-item { padding: 5px 0; border-bottom: 1px solid var(--border-item); }
+    .quest-item.done { opacity: 1; }
+    .qname { font-size: 12px; color: var(--text); letter-spacing: 0.05em; margin-bottom: 2px; }
+    .quest-item.done .qname { color: var(--text4); }
+    .quest-item.done .check { color: #2ecc71; margin-right: 3px; }
+    .qxp  { font-size: 10px; color: var(--accent); margin-top: 3px; opacity: 0.7; }
+    .quest-item.done .qxp { color: var(--text4); }
+    .qdesc { font-size: 11px; color: var(--text2); }
+    .quest-item.done .qdesc { color: var(--text4); }
+    .qprog { height: 2px; background: var(--prog-bg); border-radius: 1px; margin-top: 4px; overflow: hidden; }
+    .qprog-fill { height: 100%; background: var(--accent); border-radius: 1px; }
+    .qcount { font-size: 10px; color: var(--text3); float: right; margin-top: 2px; }
+
+    #lib-panel {
+      display: none;
+      position: absolute;
+      bottom: 44px;
+      left: 0; right: 0;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 8px 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 20;
+    }
+    #lib-panel.visible { display: flex; }
+    #lib-panel::-webkit-scrollbar { width: 4px; }
+    #lib-panel::-webkit-scrollbar-track { background: var(--panel); }
+    #lib-panel::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
+    #lib-panel::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    .lib-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 0; border-bottom: 1px solid var(--border-item);
+    }
+    .lib-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .lib-name { font-size: 12px; color: var(--text); flex: 1; }
+    .lib-unseen .lib-name { color: var(--text4); }
+    .lib-count { font-size: 12px; color: var(--accent); }
+    .lib-unseen .lib-count { color: var(--text4); }
+    .lib-rare { font-size: 10px; color: #ffd700; margin-left: 2px; }
+    #lib-title { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; margin-bottom: 4px; }
+
+    #challenge-panel {
+      display: none;
+      position: absolute;
+      bottom: 40px;
+      left: 0; right: 0;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 8px 10px;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 20;
+    }
+    #challenge-panel.visible { display: flex; }
+    #challenge-title { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; margin-bottom: 2px; }
+    .ch-item { padding: 5px 0; border-bottom: 1px solid var(--border-item); }
+    .ch-item.done .ch-name { text-decoration: line-through; color: var(--text4); }
+    .ch-item.done .ch-reward { color: var(--text4); }
+    .ch-name { font-size: 12px; color: var(--text); margin-bottom: 2px; }
+    .ch-reward { font-size: 10px; color: #f1c40f; margin-top: 3px; }
+    .ch-prog { height: 2px; background: var(--prog-bg); border-radius: 1px; margin-top: 4px; overflow: hidden; }
+    .ch-prog-fill { height: 100%; background: #f1c40f; border-radius: 1px; }
+    .ch-count { font-size: 9px; color: var(--text3); float: right; margin-top: 2px; }
+    #shop-panel {
+      display: none;
+      position: absolute;
+      top: 52px;
+      bottom: 32px;
+      left: 0; right: 0;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      flex-direction: column;
+      z-index: 25;
+      overflow: hidden;
+    }
+    #shop-panel.visible { display: flex; }
+    #shop-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    #shop-title {
+      font-size: 11px;
+      color: var(--text2);
+      letter-spacing: 0.15em;
+      flex: 1;
+    }
+    #shop-coins {
+      font-size: 12px;
+      color: #f1c40f;
+      letter-spacing: 0.05em;
+    }
+    #shop-items {
+      overflow-y: auto;
+      flex: 1;
+      padding: 6px 0;
+    }
+    #shop-items::-webkit-scrollbar { width: 4px; }
+    #shop-items::-webkit-scrollbar-track { background: var(--panel); }
+    #shop-items::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
+    #shop-items::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    .shop-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-item);
+      transition: background 0.1s;
+    }
+    .shop-item:hover { background: var(--panel-hover); }
+    .shop-item.maxed .shop-item-name { color: #2ecc71; }
+    .shop-item.locked { opacity: 0.55; }
+    .shop-lvl-badge {
+      display: inline-block;
+      margin-left: 5px;
+      font-size: 9px;
+      color: var(--accent);
+      border: 1px solid var(--accent-dim);
+      border-radius: 2px;
+      padding: 0px 3px;
+      vertical-align: middle;
+      letter-spacing: 0.05em;
+    }
+    .shop-lvl-badge.locked-badge {
+      color: #e67e22;
+      border-color: #e67e2255;
+    }
+    .shop-item.cant-afford { opacity: 0.5; }
+    .shop-item.equipped { border-left: 2px solid var(--accent-dim); background: var(--panel-equip); }
+    .shop-icon-wrap {
+      width: 28px; height: 28px;
+      flex-shrink: 0;
+      image-rendering: pixelated;
+    }
+    .shop-info { flex: 1; min-width: 0; }
+    .shop-item-name {
+      font-size: 11px;
+      color: var(--text);
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+    .shop-item-desc {
+      font-size: 10px;
+      color: var(--text3);
+    }
+    .shop-item-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .shop-levels {
+      display: flex;
+      gap: 3px;
+    }
+    .shop-level-dot {
+      width: 5px; height: 5px;
+      border-radius: 1px;
+      background: var(--border);
+    }
+    .shop-level-dot.filled { background: var(--accent); }
+    .shop-buy-btn {
+      background: var(--btn);
+      border: 1px solid var(--border-acc);
+      border-radius: 2px;
+      color: #f1c40f;
+      font-size: 10px;
+      font-family: 'Courier New', monospace;
+      padding: 2px 7px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.1s, background 0.1s;
+    }
+    .shop-buy-btn:hover { border-color: #f1c40f; background: var(--btn-hover); }
+    .shop-buy-btn:disabled { opacity: 0.3; cursor: default; border-color: var(--border); color: var(--text3); }
+    .shop-buy-btn.maxed-btn { color: #2ecc71; border-color: #1a3a2a; background: #091510; cursor: default; }
+    #shop-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .shop-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text3);
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      padding: 6px 0;
+      cursor: pointer;
+      transition: color 0.1s, border-color 0.1s;
+    }
+    .shop-tab:hover { color: var(--text2); }
+    .shop-tab.active-tab { color: var(--text); border-bottom-color: var(--accent); }
+    #vol-panel {
+      display: flex;
+      position: absolute;
+      bottom: 44px;
+      right: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 16px 8px;
+      gap: 18px;
+      align-items: flex-end;
+      z-index: 10;
+      pointer-events: none;
+    }
+    #vol-panel:has(.vol-group[style*="flex"]) { pointer-events: all; }
+    .vol-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .vol-label {
+      font-size: 8px;
+      color: var(--text3);
+      letter-spacing: 0.1em;
+      font-family: 'Courier New', monospace;
+    }
+    input.vol-slider {
+      writing-mode: vertical-lr;
+      direction: rtl;
+      height: 72px;
+      width: 18px;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="titlebar">
+    <span class="title"><span class="dot">●</span>ClaudeVibe</span>
+    <div id="win-controls">
+      <button class="wbtn min" id="btn-min"></button>
+      <button class="wbtn cls" id="btn-cls"></button>
+    </div>
+  </div>
+
+  <div id="topbar">
+    <span>lvl <span class="val" id="s-lvl">1</span></span>
+    <div id="xp-wrap"><div id="xp-fill" style="width:0%"></div></div>
+    <span><span class="val" id="s-fish">0</span> 🐟</span>
+    <span id="s-coins-wrap">🪙 <span id="s-coins">0</span></span>
+    <button id="btn-shop" data-tip="Spend your coins">SHOP</button>
+  </div>
+
+  <canvas id="game-canvas"></canvas>
+
+  <div id="achievement-toast">
+    <span id="toast-icon">⭐</span>
+    <span id="toast-text"></span>
+    <span id="toast-xp"></span>
+  </div>
+
+  <div id="shop-panel">
+    <div id="shop-header">
+      <span id="shop-title">◈ SHOP</span>
+      <span id="shop-coins">🪙 0</span>
+    </div>
+    <div id="shop-tabs">
+      <button class="shop-tab active-tab" id="shop-tab-hat">HATS</button>
+      <button class="shop-tab" id="shop-tab-boat">BOATS</button>
+      <button class="shop-tab" id="shop-tab-rod">RODS</button>
+      <button class="shop-tab" id="shop-tab-bobber">BOBBERS</button>
+      <button class="shop-tab" id="shop-tab-lure">LURES</button>
+    </div>
+    <div id="shop-items"></div>
+  </div>
+
+  <div id="quest-panel">
+    <div id="quest-list"></div>
+  </div>
+
+  <div id="lib-panel">
+    <div id="lib-title">FISH LIBRARY</div>
+    <div id="lib-list"></div>
+  </div>
+
+  <div id="challenge-panel">
+    <div id="challenge-title">TODAY'S CHALLENGES</div>
+    <div id="challenge-list"></div>
+  </div>
+
+  <div id="vol-panel">
+    <div class="vol-group" id="fx-vol-group" style="display:flex">
+      <span class="vol-label">FX</span>
+      <input type="range" class="vol-slider" id="fx-vol" min="0" max="100" value="100" orient="vertical">
+    </div>
+    <div class="vol-group" id="music-vol-group" style="display:none">
+      <span class="vol-label">MUSIC</span>
+      <input type="range" class="vol-slider" id="music-vol" min="0" max="100" value="71" orient="vertical">
+    </div>
+  </div>
+
+  <div id="stats">
+    <button id="btn-challenges" data-tip="Daily Challenges">📅</button>
+    <button id="btn-quests"    data-tip="Achievements">📋</button>
+    <button id="btn-lib"       data-tip="Fish Library">🐟</button>
+    <div style="flex:1"></div>
+    <button id="btn-theme"     data-tip="Toggle Theme">☀️</button>
+    <button id="btn-mute"      data-tip="Toggle FX" class="active">🔊</button>
+    <button id="btn-music"     data-tip="Toggle Music">🎵</button>
+  </div>
+</div>
+<script src="node_modules/tone/build/Tone.js"></script>
+<script src="renderer.js"></script>
+</body>
+</html>

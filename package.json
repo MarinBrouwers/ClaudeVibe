@@ -1,0 +1,17 @@
+{
+  "name": "claudevibe",
+  "version": "1.0.0",
+  "description": "Pixel art idle fishing game that reacts to Claude Code in real time",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "electron": "^33.3.1",
+    "tone": "^15.1.22"
+  },
+  "devDependencies": {
+    "electron-builder": "^25.1.8"
+  }
+}
