@@ -6,6 +6,9 @@ Every time Claude uses a tool — reading a file, running a search, executing co
 
 ---
 
+<img width="460" height="600" alt="image" src="https://github.com/user-attachments/assets/98cc0a8d-7b6b-41b3-98d1-659d27ef3369" />
+
+
 ## What is this?
 
 ClaudeVibe sits in the corner of your screen while you work with Claude Code. It turns Claude's activity into a cozy fishing game:
