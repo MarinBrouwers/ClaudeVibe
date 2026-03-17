@@ -27,6 +27,8 @@ ClaudeVibe sits in the corner of your screen while you work with Claude Code. It
 
 No API key needed. ClaudeVibe does not call the Anthropic API.
 
+> ⚠️ **Security notice:** Only install from the official repo at `github.com/MarinBrouwers/ClaudeVibe`. Do not install from forks or third-party links. The hook runs on your machine after every Claude tool call — you should read [`hook-handler.js`](hook-handler.js) before installing. It's 27 lines and does exactly one thing: appends a tool name to a temp file.
+
 ---
 
 ## Installation
