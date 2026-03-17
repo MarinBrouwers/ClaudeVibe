@@ -52,7 +52,13 @@ function registerHooks() {
     hooks: [{ type: 'command', command: `node "${hookScript}" ${eventType}` }],
   });
 
-  // PostToolUse — fires after each tool call
+  // PreToolUse — fires before each tool call (cast the rod)
+  if (!settings.hooks.PreToolUse) settings.hooks.PreToolUse = [];
+  const hasPreTool = settings.hooks.PreToolUse.some(h =>
+    h.hooks && h.hooks.some(hh => hh.command && hh.command.includes('claudevibe') || hh.command && hh.command.includes('hook-handler')));
+  if (!hasPreTool) settings.hooks.PreToolUse.push(makeHook('cast'));
+
+  // PostToolUse — fires after each tool call (fish bites)
   if (!settings.hooks.PostToolUse) settings.hooks.PostToolUse = [];
   const hasPostTool = settings.hooks.PostToolUse.some(h =>
     h.hooks && h.hooks.some(hh => hh.command && hh.command.includes('claudevibe') || hh.command && hh.command.includes('hook-handler')));
