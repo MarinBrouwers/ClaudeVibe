@@ -187,7 +187,7 @@ document.getElementById('btn-shop').onclick = () => {
   if (panel.classList.contains('visible')) renderShop();
 };
 
-['hat','boat','rod','bobber','lure'].forEach(tab => {
+['hat','boat','rod','bobber','lure','buddy','water'].forEach(tab => {
   const btn = document.getElementById('shop-tab-' + tab);
   if (btn) btn.addEventListener('click', () => { _shopTab = tab; renderShop(); });
 });
@@ -620,22 +620,32 @@ const COSMETICS = {
   hat: [
     { id: 'straw',   name: 'Straw Hat',    level: 1,  cost: 0   },
     { id: 'cap',     name: 'Blue Cap',      level: 2,  cost: 30  },
+    { id: 'bucket',  name: 'Bucket Hat',    level: 3,  cost: 40  },
     { id: 'redcap',  name: 'Red Cap',       level: 4,  cost: 50  },
     { id: 'beanie',  name: 'Beanie',        level: 5,  cost: 60  },
+    { id: 'party',   name: 'Party Hat',     level: 6,  cost: 70  },
     { id: 'tophat',  name: 'Top Hat',       level: 7,  cost: 90  },
+    { id: 'sombrero',name: 'Sombrero',      level: 8,  cost: 100 },
     { id: 'helmet',  name: 'Hard Hat',      level: 9,  cost: 110 },
+    { id: 'beret',   name: 'Beret',         level: 10, cost: 120 },
     { id: 'wizard',  name: 'Wizard Hat',    level: 11, cost: 150 },
     { id: 'pirate',  name: 'Pirate Hat',    level: 13, cost: 200 },
+    { id: 'tinfoil', name: 'Tinfoil Hat',   level: 15, cost: 240 },
     { id: 'crown',   name: 'Crown',         level: 16, cost: 300 },
     { id: 'halo',    name: 'Halo',          level: 20, cost: 500 },
   ],
   boat: [
     { id: 'wood',    name: 'Wood Boat',     level: 1,  cost: 0   },
     { id: 'canoe',   name: 'Canoe',         level: 2,  cost: 40  },
+    { id: 'duck',    name: 'Rubber Duck',   level: 3,  cost: 50  },
     { id: 'blue',    name: 'Blue Vessel',   level: 4,  cost: 60  },
+    { id: 'bathtub', name: 'Bathtub',       level: 5,  cost: 70  },
     { id: 'red',     name: 'Red Fisher',    level: 6,  cost: 80  },
+    { id: 'cardboard',name:'Cardboard Box', level: 7,  cost: 90  },
     { id: 'shoe',    name: 'Floating Shoe', level: 8,  cost: 120 },
+    { id: 'raft',    name: 'Log Raft',      level: 9,  cost: 130 },
     { id: 'race',    name: 'Race Boat',     level: 10, cost: 160 },
+    { id: 'submarine',name:'Submarine',     level: 11, cost: 180 },
     { id: 'dark',    name: 'Midnight',      level: 12, cost: 200 },
     { id: 'pirateship', name: 'Pirate Ship',level: 14, cost: 260 },
     { id: 'gold',    name: 'Golden Barge',  level: 17, cost: 380 },
@@ -644,48 +654,86 @@ const COSMETICS = {
   rod: [
     { id: 'bamboo',  name: 'Bamboo Rod',    level: 1,  cost: 0   },
     { id: 'carbon',  name: 'Carbon Rod',    level: 2,  cost: 35  },
+    { id: 'noodle',  name: 'Pool Noodle',   level: 3,  cost: 40  },
     { id: 'blue',    name: 'Blue Steel',    level: 4,  cost: 55  },
+    { id: 'wand',    name: 'Magic Wand',    level: 5,  cost: 65  },
     { id: 'pink',    name: 'Pink Rod',      level: 6,  cost: 70  },
+    { id: 'selfie',  name: 'Selfie Stick',  level: 7,  cost: 80  },
     { id: 'gold',    name: 'Gold Rod',      level: 8,  cost: 100 },
+    { id: 'plunger', name: 'Plunger',       level: 9,  cost: 110 },
     { id: 'neon',    name: 'Neon Green',    level: 10, cost: 130 },
     { id: 'crystal', name: 'Crystal Rod',   level: 13, cost: 200 },
+    { id: 'lightsaber',name:'Lightsaber',   level: 14, cost: 240 },
     { id: 'fire',    name: 'Fire Rod',      level: 16, cost: 280 },
+    { id: 'trident', name: 'Trident',       level: 17, cost: 320 },
     { id: 'rainbow', name: 'Rainbow Rod',   level: 20, cost: 500 },
   ],
   bobber: [
-    { id: 'none',    name: 'No Bobber',    level: 1,  cost: 0   },
-    { id: 'classic', name: 'Classic',      level: 1,  cost: 0   },
-    { id: 'blue',    name: 'Blue',         level: 2,  cost: 20  },
-    { id: 'yellow',  name: 'Yellow',       level: 3,  cost: 30  },
-    { id: 'cork',    name: 'Cork',         level: 4,  cost: 45  },
-    { id: 'oval',    name: 'Oval Float',   level: 6,  cost: 65  },
-    { id: 'glow',    name: 'Glow Float',   level: 8,  cost: 100 },
-    { id: 'neon',    name: 'Neon',         level: 10, cost: 140 },
-    { id: 'crystal', name: 'Crystal',      level: 13, cost: 200 },
-    { id: 'star',    name: 'Star Float',   level: 16, cost: 280 },
+    { id: 'none',    name: 'No Bobber',     level: 1,  cost: 0   },
+    { id: 'classic', name: 'Classic',       level: 1,  cost: 0   },
+    { id: 'blue',    name: 'Blue',          level: 2,  cost: 20  },
+    { id: 'yellow',  name: 'Yellow',        level: 3,  cost: 30  },
+    { id: 'cork',    name: 'Cork',          level: 4,  cost: 45  },
+    { id: 'pizza',   name: 'Pizza Slice',   level: 5,  cost: 55  },
+    { id: 'oval',    name: 'Oval Float',    level: 6,  cost: 65  },
+    { id: 'heart',   name: 'Heart',         level: 7,  cost: 80  },
+    { id: 'glow',    name: 'Glow Float',    level: 8,  cost: 100 },
+    { id: 'rubber_duck', name: 'Rubber Duck', level: 9, cost: 120 },
+    { id: 'neon',    name: 'Neon',          level: 10, cost: 140 },
+    { id: 'skull',   name: 'Skull',         level: 11, cost: 160 },
+    { id: 'crystal', name: 'Crystal',       level: 13, cost: 200 },
+    { id: 'gem',     name: 'Gem',           level: 14, cost: 220 },
+    { id: 'star',    name: 'Star Float',    level: 16, cost: 280 },
+    { id: 'ring',    name: 'Ring Float',    level: 17, cost: 300 },
   ],
   lure: [
-    { id: 'none',      name: 'Live Worm',    level: 1,  cost: 0,  bait: true },
-    { id: 'crawler',   name: 'Big Crawler',  level: 3,  cost: 40, bait: true },
-    { id: 'frog',      name: 'Frog',         level: 5,  cost: 65  },
-    { id: 'spinner',   name: 'Spinner',      level: 7,  cost: 90  },
-    { id: 'spoon',     name: 'Silver Spoon', level: 9,  cost: 120 },
-    { id: 'fly',       name: 'Fly Lure',     level: 11, cost: 160 },
-    { id: 'firefly',   name: 'Firefly',      level: 14, cost: 220 },
-    { id: 'deepdiver', name: 'Deep Diver',   level: 17, cost: 320 },
-    { id: 'squid',     name: 'Squid',        level: 20, cost: 450 },
+    { id: 'none',      name: 'Live Worm',   level: 1,  cost: 0,  bait: true },
+    { id: 'hotdog',    name: 'Hotdog',      level: 2,  cost: 25, bait: true },
+    { id: 'crawler',   name: 'Big Crawler', level: 3,  cost: 40, bait: true },
+    { id: 'coin',      name: 'Shiny Coin',  level: 4,  cost: 50  },
+    { id: 'frog',      name: 'Frog',        level: 5,  cost: 65  },
+    { id: 'rubber_duck',name:'Mini Duck',   level: 6,  cost: 75  },
+    { id: 'spinner',   name: 'Spinner',     level: 7,  cost: 90  },
+    { id: 'ghost',     name: 'Ghost',       level: 8,  cost: 100 },
+    { id: 'spoon',     name: 'Silver Spoon',level: 9,  cost: 120 },
+    { id: 'sausage',   name: 'Sausage',     level: 10, cost: 135, bait: true },
+    { id: 'fly',       name: 'Fly Lure',    level: 11, cost: 160 },
+    { id: 'cheese',    name: 'Cheese',      level: 12, cost: 175, bait: true },
+    { id: 'firefly',   name: 'Firefly',     level: 14, cost: 220 },
+    { id: 'deepdiver', name: 'Deep Diver',  level: 17, cost: 320 },
+    { id: 'squid',     name: 'Squid',       level: 20, cost: 450 },
+  ],
+  buddy: [
+    { id: 'none',    name: 'No Buddy',      level: 1,  cost: 0   },
+    { id: 'cat',     name: 'Cat',           level: 3,  cost: 45  },
+    { id: 'dog',     name: 'Dog',           level: 6,  cost: 80  },
+    { id: 'duck',    name: 'Duck',          level: 9,  cost: 120 },
+    { id: 'gnome',   name: 'Garden Gnome',  level: 12, cost: 180 },
+    { id: 'parrot',  name: 'Parrot',        level: 16, cost: 300 },
+  ],
+  water: [
+    { id: 'normal',  name: 'Normal',        level: 1,  cost: 0   },
+    { id: 'tea',     name: 'Earl Grey',     level: 4,  cost: 50  },
+    { id: 'lava',    name: 'Lava Pond',     level: 8,  cost: 120 },
+    { id: 'slime',   name: 'Slime Pit',     level: 12, cost: 190 },
+    { id: 'galaxy',  name: 'Galaxy Water',  level: 17, cost: 400 },
   ],
 };
 
 const HAT_COLORS = {
   straw:   ['#d4a017', '#b8860b'],
   cap:     ['#2980b9', '#1a5276'],
+  bucket:  ['#e8d080', '#c4a840'],
   redcap:  ['#c0392b', '#7b241c'],
   beanie:  ['#27ae60', '#1e8449'],
+  party:   ['#e74c3c', '#f39c12'],
   tophat:  ['#2c2c2c', '#1a1a1a'],
+  sombrero:['#c8a050', '#8a6030'],
   helmet:  ['#e67e22', '#ca6f1e'],
+  beret:   ['#2c3e50', '#1a252f'],
   wizard:  ['#8e44ad', '#6c3483'],
   pirate:  ['#1a1a1a', '#c0392b'],
+  tinfoil: ['#c0c8d0', '#a0a8b0'],
   crown:   ['#ffd700', '#f39c12'],
   halo:    ['#fff080', '#ffd700'],
 };
@@ -693,10 +741,15 @@ const HAT_COLORS = {
 const BOAT_COLORS = {
   wood:       ['#8B5E3C', '#6B3E1C'],
   canoe:      ['#c07840', '#8B5E3C'],
+  duck:       ['#f1c40f', '#e67e22'],
   blue:       ['#2980b9', '#1a5276'],
+  bathtub:    ['#ecf0f1', '#bdc3c7'],
   red:        ['#c0392b', '#7b241c'],
+  cardboard:  ['#c8a050', '#9a7030'],
   shoe:       ['#e8e0c8', '#c8b898'],
+  raft:       ['#8B5E3C', '#5a3e1c'],
   race:       ['#e74c3c', '#c0392b'],
+  submarine:  ['#27ae60', '#1e8449'],
   dark:       ['#1e1e3a', '#0e0e1e'],
   pirateship: ['#2c1810', '#1a0e08'],
   gold:       ['#c8a000', '#a07800'],
@@ -704,38 +757,56 @@ const BOAT_COLORS = {
 };
 
 const BOBBER_COLORS = {
-  classic: { top: '#e74c3c', bot: '#f0f0f0' },
-  blue:    { top: '#2980b9', bot: '#ecf0f1' },
-  yellow:  { top: '#f1c40f', bot: '#1a1a2e' },
-  cork:    { top: '#c8a060', bot: '#8B6914' },
-  oval:    { top: '#e74c3c', bot: '#f0f0f0', oval: true },
-  glow:    { top: '#7ec8e3', bot: '#4a8fff', glows: true },
-  neon:    { top: '#00ff88', bot: '#006644', glows: true },
-  crystal: { top: '#c8e8ff', bot: '#e8f8ff', crystal: true },
-  star:    { top: '#ffd700', bot: '#f39c12', star: true },
+  classic:     { top: '#e74c3c', bot: '#f0f0f0' },
+  blue:        { top: '#2980b9', bot: '#ecf0f1' },
+  yellow:      { top: '#f1c40f', bot: '#1a1a2e' },
+  cork:        { top: '#c8a060', bot: '#8B6914' },
+  pizza:       { top: '#e74c3c', bot: '#f39c12' },
+  oval:        { top: '#e74c3c', bot: '#f0f0f0', oval: true },
+  heart:       { top: '#e74c3c', bot: '#c0392b' },
+  glow:        { top: '#7ec8e3', bot: '#4a8fff', glows: true },
+  rubber_duck: { top: '#f1c40f', bot: '#e67e22' },
+  neon:        { top: '#00ff88', bot: '#006644', glows: true },
+  skull:       { top: '#ecf0f1', bot: '#bdc3c7' },
+  crystal:     { top: '#c8e8ff', bot: '#e8f8ff', crystal: true },
+  gem:         { top: '#9b59b6', bot: '#8e44ad', crystal: true },
+  star:        { top: '#ffd700', bot: '#f39c12', star: true },
+  ring:        { top: '#ffd700', bot: '#f39c12' },
 };
 
 const LURE_COLORS = {
-  crawler:   { color: '#e67e22', dark: '#d45000' },
-  frog:      { color: '#2ecc71', dark: '#1a7a30', belly: '#f1c40f' },
-  spinner:   { color: '#bdc3c7', blade: '#ecf0f1' },
-  spoon:     { color: '#c8c8cc', shine: '#ecf0f1' },
-  fly:       { color: '#d4688a', wing: '#9b59b6' },
-  firefly:   { color: '#ffff44', dark: '#888800', glows: true },
-  deepdiver: { color: '#c0392b', belly: '#e8e0d0' },
-  squid:     { color: '#9b59b6', dark: '#6c3483' },
+  crawler:    { color: '#e67e22', dark: '#d45000' },
+  hotdog:     { color: '#e67e22', dark: '#c0392b', bun: '#f39c12' },
+  coin:       { color: '#ffd700', dark: '#c8a000', shine: '#ffe566' },
+  frog:       { color: '#2ecc71', dark: '#1a7a30', belly: '#f1c40f' },
+  rubber_duck:{ color: '#f1c40f', dark: '#e67e22', beak: '#e67e22' },
+  spinner:    { color: '#bdc3c7', blade: '#ecf0f1' },
+  ghost:      { color: '#ecf0f1', dark: '#bdc3c7', glow: '#ffffff' },
+  spoon:      { color: '#c8c8cc', shine: '#ecf0f1' },
+  sausage:    { color: '#c0392b', dark: '#922b21', shine: '#e74c3c' },
+  fly:        { color: '#d4688a', wing: '#9b59b6' },
+  cheese:     { color: '#f1c40f', dark: '#d4ac0d', hole: '#c8a000' },
+  firefly:    { color: '#ffff44', dark: '#888800', glows: true },
+  deepdiver:  { color: '#c0392b', belly: '#e8e0d0' },
+  squid:      { color: '#9b59b6', dark: '#6c3483' },
 };
 
 const ROD_COLORS = {
-  bamboo:  '#8B7355',
-  carbon:  '#4a4a5a',
-  blue:    '#2980b9',
-  pink:    '#e91e8c',
-  gold:    '#ffd700',
-  neon:    '#39ff14',
-  crystal: '#7ec8e3',
-  fire:    '#e74c3c',
-  rainbow: '#ff6b6b',
+  bamboo:    '#8B7355',
+  carbon:    '#4a4a5a',
+  noodle:    '#e74c3c',
+  blue:      '#2980b9',
+  wand:      '#9b59b6',
+  pink:      '#e91e8c',
+  selfie:    '#bdc3c7',
+  gold:      '#ffd700',
+  plunger:   '#e67e22',
+  neon:      '#39ff14',
+  crystal:   '#7ec8e3',
+  lightsaber:'#4a8fff',
+  fire:      '#e74c3c',
+  trident:   '#3498db',
+  rainbow:   '#ff6b6b',
 };
 
 let _shopTab = 'hat';
@@ -803,6 +874,38 @@ function drawShopPreview(canvas, category, id) {
       c.ellipse(6*s, 3*s, 5*s, 2*s, 0, 0, Math.PI * 2);
       c.stroke();
       c.shadowBlur = 0;
+    } else if (id === 'bucket') {
+      p(1,5, col2, 10, 2); // wide brim
+      p(2,2, col1, 8, 3);  // wide low crown
+      p(3,1, col2, 6, 1);  // top fold
+    } else if (id === 'party') {
+      p(5,0, col1, 2, 1);
+      p(4,1, col1, 4, 2);
+      p(3,3, col1, 6, 2);
+      p(2,5, col2, 8, 2); // brim
+      c.fillStyle = '#ffd700'; c.fillRect(5*s, 0*s, s, s); // star tip
+      c.fillStyle = '#ffffff'; c.fillRect(4*s, 2*s, s, s); // dot
+      c.fillStyle = '#ffffff'; c.fillRect(7*s, 3*s, s, s); // dot
+    } else if (id === 'sombrero') {
+      p(0,5, col2, 12, 2); // very wide brim
+      p(2,3, col1, 8, 2);
+      p(3,1, col1, 6, 2);
+      p(4,0, col1, 4, 1);
+      c.fillStyle = '#e74c3c'; c.fillRect(2*s, 5*s, 8*s, s); // band
+    } else if (id === 'beret') {
+      p(1,4, col1, 10, 1); // brim edge
+      p(2,2, col1, 8, 2);
+      p(3,1, col1, 6, 1);
+      p(4,0, col2, 4, 1);
+      p(9,2, col2, 2, 2);  // side puff
+    } else if (id === 'tinfoil') {
+      p(2,5, col2, 8, 1); // brim
+      p(3,3, col1, 6, 2);
+      p(4,1, col1, 4, 2);
+      p(5,0, col1, 2, 1);
+      // shiny creases
+      c.fillStyle = '#ffffff88'; c.fillRect(4*s, 1*s, s, 4*s);
+      c.fillStyle = '#ffffff44'; c.fillRect(7*s, 2*s, s, 3*s);
     }
   } else if (category === 'boat') {
     const [col1, col2] = BOAT_COLORS[id] || ['#8B5E3C','#6B3E1C'];
@@ -905,6 +1008,44 @@ function drawShopPreview(canvas, category, id) {
       c.fillStyle = col2 + '55';
       c.beginPath(); c.ellipse(6*s, 9*s, 5*s, s, 0, 0, Math.PI*2); c.fill(); // glow
 
+    } else if (id === 'duck') {
+      // Yellow rubber duck
+      p(1,8, col1, 10, 2);   // body
+      p(2,10, col2, 8, 1);
+      p(3,5, col1, 5, 3);    // head
+      p(4,4, col1, 3, 1);
+      p(8,6, col2, 3, 2);    // beak
+      c.fillStyle = '#1a1a1a'; c.fillRect(5*s, 5*s, s, s); // eye
+    } else if (id === 'bathtub') {
+      p(0,9, col2, 12, 2);   // wide flat bottom
+      p(0,6, col1, 2, 3);    // left wall
+      p(10,6, col1, 2, 3);   // right wall
+      p(1,5, '#c0c0c0', 2, 2); // faucet
+      p(7,5, col2, 4, 2);    // soap dish bump
+      c.fillStyle = '#ffffff44'; c.fillRect(2*s, 7*s, 6*s, 2*s); // water in tub
+    } else if (id === 'cardboard') {
+      p(1,5, col1, 10, 6);   // box body
+      p(0,5, col2, 1, 6);    // left edge
+      p(11,5, col2, 1, 6);   // right edge
+      p(1,4, col2, 3, 1);    // left flap
+      p(5,3, col2, 4, 2);    // right flap open
+      c.fillStyle = col2; c.fillRect(4*s, 5*s, s, 4*s); // center crease
+      c.fillStyle = '#e74c3c'; c.fillRect(3*s, 7*s, 4*s, s); // FRAGILE sticker
+    } else if (id === 'raft') {
+      // Three logs lashed together
+      p(0,8, '#8B5E3C', 12, 2);   // log 1
+      p(0,6, '#7a4e2c', 12, 2);   // log 2
+      p(0,4, '#6a3e1c', 12, 2);   // log 3
+      p(3,3, '#c8a050', 1, 6);    // lashing rope L
+      p(8,3, '#c8a050', 1, 6);    // lashing rope R
+    } else if (id === 'submarine') {
+      p(2,5, col1, 8, 4);    // hull
+      p(1,6, col2, 1, 2);    // left nose
+      p(11,6, col2, 1, 2);   // right nose
+      p(5,3, col2, 3, 2);    // conning tower
+      p(6,1, '#888', 1, 2);  // periscope
+      c.fillStyle = '#c8e8ff'; c.fillRect(3*s, 6*s, 2*s, 2*s); // porthole L
+      c.fillStyle = '#c8e8ff'; c.fillRect(7*s, 6*s, 2*s, 2*s); // porthole R
     } else {
       // Fallback sailboat
       p(1,7, col1, 10, 2);
@@ -950,6 +1091,56 @@ function drawShopPreview(canvas, category, id) {
       });
       c.globalAlpha = 1;
     }
+    if (id === 'noodle') {
+      c.clearRect(0, 0, 36, 36);
+      c.strokeStyle = ROD_COLORS.noodle; c.lineWidth = 5;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.quadraticCurveTo(5*s, 4*s, 10*s, 1*s); c.stroke();
+      c.strokeStyle = '#ff9999'; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.quadraticCurveTo(5*s, 4*s, 10*s, 1*s); c.stroke();
+    } else if (id === 'wand') {
+      c.clearRect(0, 0, 36, 36);
+      c.strokeStyle = ROD_COLORS.wand; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.lineTo(10*s, 1*s); c.stroke();
+      c.shadowColor = '#ffd700'; c.shadowBlur = 8;
+      c.fillStyle = '#ffd700';
+      c.beginPath(); c.arc(10*s, 1*s, 2*s, 0, Math.PI*2); c.fill();
+      c.fillStyle = '#ffd70088';
+      c.beginPath(); c.arc(10*s, 1*s, 3*s, 0, Math.PI*2); c.fill();
+      c.shadowBlur = 0;
+    } else if (id === 'selfie') {
+      c.clearRect(0, 0, 36, 36);
+      c.strokeStyle = ROD_COLORS.selfie; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.lineTo(10*s, 1*s); c.stroke();
+      p(8,0, '#2c3e50', 4, 3);
+      p(9,0, '#4a8fff', 2, 2);
+    } else if (id === 'plunger') {
+      c.clearRect(0, 0, 36, 36);
+      c.strokeStyle = ROD_COLORS.plunger; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.lineTo(8*s, 2*s); c.stroke();
+      c.fillStyle = ROD_COLORS.plunger;
+      c.beginPath(); c.arc(9*s, 1*s, 2*s, 0, Math.PI); c.fill();
+      c.fillStyle = '#e67e2244';
+      c.beginPath(); c.ellipse(9*s, 3*s, 3*s, s, 0, 0, Math.PI*2); c.fill();
+    } else if (id === 'lightsaber') {
+      c.clearRect(0, 0, 36, 36);
+      c.strokeStyle = '#888888'; c.lineWidth = 4;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.lineTo(4*s, 7*s); c.stroke();
+      c.shadowColor = ROD_COLORS.lightsaber; c.shadowBlur = 12;
+      c.strokeStyle = ROD_COLORS.lightsaber; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(4*s, 7*s); c.lineTo(10*s, 1*s); c.stroke();
+      c.strokeStyle = '#ffffff'; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(4*s, 7*s); c.lineTo(10*s, 1*s); c.stroke();
+      c.shadowBlur = 0;
+    } else if (id === 'trident') {
+      c.clearRect(0, 0, 36, 36);
+      c.strokeStyle = ROD_COLORS.trident; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.lineTo(7*s, 2*s); c.stroke();
+      c.fillStyle = ROD_COLORS.trident;
+      c.fillRect(5*s, 0*s, s, 3*s); // left prong
+      c.fillRect(7*s, 0*s, s, 4*s); // center prong
+      c.fillRect(9*s, 0*s, s, 3*s); // right prong
+      c.fillRect(5*s, 3*s, 5*s, s); // crossbar
+    }
 
   } else if (category === 'bobber') {
     const bc = BOBBER_COLORS[id];
@@ -985,6 +1176,51 @@ function drawShopPreview(canvas, category, id) {
       c.fillStyle = '#ffffff55';
       c.beginPath(); c.arc(5*s, 5*s, 1.5*s, 0, Math.PI*2); c.fill();
 
+    } else if (id === 'pizza') {
+      c.fillStyle = '#f39c12';
+      c.beginPath(); c.moveTo(6*s, 2*s); c.lineTo(2*s, 10*s); c.lineTo(10*s, 10*s); c.closePath(); c.fill();
+      c.fillStyle = '#e74c3c';
+      c.beginPath(); c.moveTo(6*s, 3*s); c.lineTo(3*s, 9*s); c.lineTo(9*s, 9*s); c.closePath(); c.fill();
+      c.fillStyle = '#f0f0f0'; c.fillRect(4*s, 5*s, s, s);
+      c.fillStyle = '#f0f0f0'; c.fillRect(7*s, 7*s, s, s);
+    } else if (id === 'heart') {
+      c.fillStyle = '#e74c3c';
+      c.beginPath();
+      c.moveTo(6*s, 10*s);
+      c.bezierCurveTo(1*s, 6*s, 1*s, 2*s, 4*s, 2*s);
+      c.bezierCurveTo(5*s, 2*s, 6*s, 3*s, 6*s, 3*s);
+      c.bezierCurveTo(6*s, 3*s, 7*s, 2*s, 8*s, 2*s);
+      c.bezierCurveTo(11*s, 2*s, 11*s, 6*s, 6*s, 10*s);
+      c.fill();
+    } else if (id === 'rubber_duck') {
+      p(3,3, '#f1c40f', 6, 4);
+      p(2,7, '#f1c40f', 8, 4);
+      p(8,5, '#e67e22', 3, 2);
+      c.fillStyle = '#1a1a1a'; c.fillRect(4*s, 4*s, s, s);
+    } else if (id === 'skull') {
+      p(2,2, '#ecf0f1', 8, 5);
+      p(1,4, '#ecf0f1', 10, 3);
+      p(2,9, '#ecf0f1', 3, 2);
+      p(7,9, '#ecf0f1', 3, 2);
+      c.fillStyle = '#1a1a1a'; c.fillRect(3*s, 4*s, 2*s, 2*s);
+      c.fillStyle = '#1a1a1a'; c.fillRect(7*s, 4*s, 2*s, 2*s);
+      c.fillStyle = '#1a1a1a'; c.fillRect(4*s, 8*s, s, 2*s);
+    } else if (id === 'gem') {
+      const gc = BOBBER_COLORS.gem;
+      c.fillStyle = gc.top + 'cc';
+      c.beginPath(); c.arc(6*s, 6*s, 4*s, 0, Math.PI*2); c.fill();
+      c.fillStyle = '#ffffff55';
+      c.beginPath(); c.arc(5*s, 4*s, 1.5*s, 0, Math.PI*2); c.fill();
+      c.fillStyle = gc.bot;
+      c.fillRect(4*s, 6*s, 4*s, 2*s);
+    } else if (id === 'ring') {
+      const rc = BOBBER_COLORS.ring;
+      c.strokeStyle = rc.top; c.lineWidth = 3;
+      c.beginPath(); c.arc(6*s, 6*s, 4*s, 0, Math.PI*2); c.stroke();
+      c.strokeStyle = '#ffe566'; c.lineWidth = 1;
+      c.beginPath(); c.arc(6*s, 6*s, 4*s, 0, Math.PI*2); c.stroke();
+      c.fillStyle = '#c8e8ff';
+      c.beginPath(); c.moveTo(6*s, 2*s); c.lineTo(4*s, 4*s); c.lineTo(6*s, 6*s); c.lineTo(8*s, 4*s); c.closePath(); c.fill();
     } else if (bc) {
       // Standard round bobber (classic, blue, yellow, cork, glow, neon)
       p(6,0, '#6a4a20', 1, 3);   // antenna
@@ -1085,6 +1321,123 @@ function drawShopPreview(canvas, category, id) {
       p(6,9, lc.dark, 2, 3);
       p(8,9, lc.dark, 2, 3);
       p(5,2, '#ffffff55', 2, 2);
+    } else if (id === 'hotdog') {
+      p(2,5, lc.bun, 8, 3);
+      p(1,8, lc.bun, 10, 2);
+      p(2,6, lc.color, 8, 3);
+      c.fillStyle = '#f1c40f'; c.fillRect(2*s, 7*s, 8*s, s);
+    } else if (id === 'coin') {
+      c.fillStyle = lc.color;
+      c.beginPath(); c.arc(6*s, 6*s, 4*s, 0, Math.PI*2); c.fill();
+      c.fillStyle = lc.dark;
+      c.beginPath(); c.arc(6*s, 6*s, 3*s, 0, Math.PI*2); c.fill();
+      c.fillStyle = lc.shine;
+      c.beginPath(); c.arc(5*s, 5*s, 1.5*s, 0, Math.PI*2); c.fill();
+      c.fillStyle = lc.color; c.font = `bold ${2*s}px sans-serif`; c.textAlign = 'center';
+      c.fillText('$', 6*s, 8*s);
+      c.textAlign = 'left';
+    } else if (id === 'rubber_duck') {
+      p(3,3, lc.color, 6, 4);
+      p(2,7, lc.color, 8, 4);
+      p(8,5, lc.beak, 3, 2);
+      c.fillStyle = '#1a1a1a'; c.fillRect(4*s, 4*s, s, s);
+    } else if (id === 'ghost') {
+      p(3,2, lc.color, 6, 5);
+      p(2,5, lc.color, 8, 5);
+      p(2,10, lc.color, 2, 2);
+      p(5,10, lc.color, 2, 2);
+      p(8,10, lc.color, 2, 2);
+      c.fillStyle = '#1a1a1a'; c.fillRect(4*s, 5*s, 2*s, 2*s);
+      c.fillStyle = '#1a1a1a'; c.fillRect(7*s, 5*s, 2*s, 2*s);
+      c.shadowColor = lc.glow; c.shadowBlur = 8;
+      c.fillStyle = lc.color + '22'; c.beginPath(); c.arc(6*s, 6*s, 5*s, 0, Math.PI*2); c.fill();
+      c.shadowBlur = 0;
+    } else if (id === 'sausage') {
+      p(2,4, lc.dark, 8, 2);
+      p(1,5, lc.color, 10, 3);
+      p(2,8, lc.dark, 8, 2);
+      p(0,6, lc.dark, 2, 2);
+      p(10,6, lc.dark, 2, 2);
+      c.fillStyle = lc.shine; c.fillRect(4*s, 5*s, 4*s, s);
+    } else if (id === 'cheese') {
+      c.fillStyle = lc.color;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.lineTo(10*s, 10*s); c.lineTo(10*s, 4*s); c.lineTo(2*s, 10*s); c.fill();
+      c.fillStyle = lc.dark;
+      c.beginPath(); c.moveTo(2*s, 10*s); c.lineTo(10*s, 4*s); c.lineTo(10*s, 3*s); c.lineTo(1*s, 10*s); c.closePath(); c.fill();
+      c.fillStyle = lc.hole;
+      c.beginPath(); c.arc(7*s, 8*s, 1.5*s, 0, Math.PI*2); c.fill();
+      c.beginPath(); c.arc(5*s, 9*s, s, 0, Math.PI*2); c.fill();
+    }
+
+  } else if (category === 'buddy') {
+    if (id === 'none') {
+      c.strokeStyle = '#4a4a6a'; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(3*s, 3*s); c.lineTo(9*s, 9*s); c.stroke();
+      c.beginPath(); c.moveTo(9*s, 3*s); c.lineTo(3*s, 9*s); c.stroke();
+    } else if (id === 'cat') {
+      p(3,2, '#888888', 2, 2);
+      p(7,2, '#888888', 2, 2);
+      p(2,4, '#888888', 8, 6);
+      p(3,3, '#888888', 6, 3);
+      c.fillStyle = '#1a1a1a'; c.fillRect(4*s, 5*s, s, s);
+      c.fillStyle = '#1a1a1a'; c.fillRect(7*s, 5*s, s, s);
+      c.fillStyle = '#e8a0a0'; c.fillRect(5*s, 6*s, 2*s, s);
+      c.strokeStyle = '#cccccc'; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(2*s, 6*s); c.lineTo(5*s, 7*s); c.stroke();
+      c.beginPath(); c.moveTo(2*s, 7*s); c.lineTo(5*s, 7*s); c.stroke();
+      c.beginPath(); c.moveTo(10*s, 6*s); c.lineTo(7*s, 7*s); c.stroke();
+      c.beginPath(); c.moveTo(10*s, 7*s); c.lineTo(7*s, 7*s); c.stroke();
+    } else if (id === 'dog') {
+      p(2,4, '#c8a060', 8, 3);
+      p(1,7, '#c8a060', 10, 4);
+      p(1,4, '#a07040', 3, 4);
+      p(8,4, '#a07040', 3, 4);
+      p(5,11, '#a07040', 2, 2);
+      c.fillStyle = '#1a1a1a'; c.fillRect(4*s, 5*s, s, s);
+      c.fillStyle = '#1a1a1a'; c.fillRect(7*s, 5*s, s, s);
+      c.fillStyle = '#cc6655'; c.fillRect(5*s, 6*s, 2*s, s);
+    } else if (id === 'duck') {
+      p(4,3, '#f1c40f', 4, 3);
+      p(2,6, '#f1c40f', 8, 4);
+      p(8,5, '#e67e22', 3, 2);
+      p(4,10, '#e67e22', 4, 2);
+      c.fillStyle = '#1a1a1a'; c.fillRect(5*s, 4*s, s, s);
+    } else if (id === 'gnome') {
+      p(4,0, '#e74c3c', 4, 4);
+      p(3,1, '#e74c3c', 6, 3);
+      p(2,4, '#f0e8d8', 8, 2);
+      p(3,6, '#c8a878', 6, 3);
+      p(2,9, '#4a7a3a', 8, 3);
+      p(4,8, '#f0f0f0', 4, 2);
+    } else if (id === 'parrot') {
+      p(4,2, '#27ae60', 4, 3);
+      p(2,5, '#27ae60', 8, 4);
+      p(3,1, '#e74c3c', 2, 2);
+      p(7,5, '#f39c12', 3, 2);
+      p(2,9, '#8B5E3C', 4, 2);
+      p(6,9, '#8B5E3C', 4, 2);
+      c.fillStyle = '#1a1a1a'; c.fillRect(5*s, 3*s, s, s);
+      c.fillStyle = '#f1c40f'; c.fillRect(4*s, 7*s, 3*s, 2*s);
+    }
+
+  } else if (category === 'water') {
+    const waterPalette = {
+      normal:  ['#1a4a7a', '#0a2040', '#4a8fbf'],
+      tea:     ['#8b6914', '#5a3e00', '#c8a050'],
+      lava:    ['#c0392b', '#7b241c', '#e74c3c'],
+      slime:   ['#27ae60', '#1a5e30', '#2ecc71'],
+      galaxy:  ['#1a0a3a', '#0a0520', '#9b59b6'],
+    };
+    const [wt, wb, ws] = waterPalette[id] || waterPalette.normal;
+    const g2 = c.createLinearGradient(0, 4*s, 0, 12*s);
+    g2.addColorStop(0, wt); g2.addColorStop(1, wb);
+    c.fillStyle = g2; c.fillRect(0, 4*s, 12*s, 8*s);
+    c.fillStyle = ws + '44'; c.fillRect(1*s, 5*s, 5*s, s);
+    c.fillStyle = ws + '44'; c.fillRect(4*s, 7*s, 6*s, s);
+    if (id === 'galaxy') {
+      c.fillStyle = '#ffffff'; c.fillRect(2*s, 5*s, s, s);
+      c.fillStyle = '#ffffff'; c.fillRect(8*s, 6*s, s, s);
+      c.fillStyle = '#9b59b6'; c.fillRect(5*s, 8*s, s, s);
     }
   }
 }
@@ -1095,7 +1448,7 @@ function renderShop() {
   document.getElementById('shop-coins').textContent = '🪙 ' + S.coins;
 
   // Update tab buttons
-  ['hat','boat','rod','bobber','lure'].forEach(tab => {
+  ['hat','boat','rod','bobber','lure','buddy','water'].forEach(tab => {
     const btn = document.getElementById('shop-tab-' + tab);
     if (btn) btn.classList.toggle('active-tab', tab === _shopTab);
   });
@@ -1127,8 +1480,9 @@ function renderShop() {
     const info = document.createElement('div');
     info.className = 'shop-info';
     let desc = '';
-    if (!levelMet)        desc = `Unlocks at level ${item.level}`;
-    else if (!purchased)  desc = item.cost > 0 ? `${item.cost} 🪙` : 'Free';
+    if (!levelMet)               desc = `Unlocks at level ${item.level}`;
+    else if (!purchased && !canAfford) desc = `need ${item.cost - S.coins} more 🪙`;
+    else if (!purchased)         desc = item.cost > 0 ? `${item.cost} 🪙` : 'Free';
     else                  desc = equipped ? 'Equipped' : 'Owned';
     const lvlBadge = item.level > 1 ? `<span class="shop-lvl-badge${!levelMet ? ' locked-badge' : ''}">LVL ${item.level}</span>` : '';
     info.innerHTML = `<div class="shop-item-name">${item.name}${lvlBadge}</div><div class="shop-item-desc">${desc}</div>`;
@@ -1254,8 +1608,8 @@ const MOOD_COL = { idle: '#7ec8e3', focused: '#e8c547', sleepy: '#7070a0' };
 const S = {
   level: 1, xp: 0, xpToNext: 100,
   coins: 0,
-  cosmetics: { hat: 'straw', boat: 'wood', rod: 'bamboo', bobber: 'classic', lure: 'none' },
-  cosmeticsPurchased: ['straw', 'wood', 'bamboo', 'classic'],
+  cosmetics: { hat: 'straw', boat: 'wood', rod: 'bamboo', bobber: 'classic', lure: 'none', buddy: 'none', water: 'normal' },
+  cosmeticsPurchased: ['straw', 'wood', 'bamboo', 'classic', 'none'],
   mood: 'idle',
   questsCompleted: [],
   fishCaught: [],
@@ -1284,6 +1638,7 @@ const S = {
   panY: 0,
   smileTimer: 0,
   catchCooldown: 0, // frames to wait after catch before next fish can spawn
+  toolQuip: { text: '', timer: 0 }, // speech bubble quip triggered by tool use
   sessionFish: [],  // fish caught this session only — cleared on restart
   fishQueue: [],    // queued events: { type: 'cast' } or { type: 'fish', tool }
   theme: 'dark',
@@ -1452,6 +1807,11 @@ function doCast() {
 }
 
 function spawnFish(toolName) {
+  // Occasional muttered quip — roughly 1 in 7 fish
+  if (Math.random() < 1 / 7) {
+    const quips = TOOL_QUIPS[toolName] || DEFAULT_QUIPS;
+    S.toolQuip = { text: quips[Math.floor(Math.random() * quips.length)], timer: 220 };
+  }
   const def  = fishForTool(toolName);
   const rare = Math.random() < 0.05;
   const W    = canvas.width;
@@ -1658,12 +2018,14 @@ function drawSky(W, wY) {
     const arcHeight = wY * 0.72;
     const moonX = moonPhase * (W + 20) - 10;
     const moonY = wY - arcHeight * Math.sin(moonPhase * Math.PI) - 10;
-    ctx.globalAlpha = moonAlpha * 0.92;
-    // Glow
+    // Glow (soft, dimmer)
+    ctx.globalAlpha = moonAlpha * 0.35;
     px(moonX - 7, moonY - 7, 14, 14, '#c8d8f0');
     // Full moon disc
-    px(moonX - 5, moonY - 5, 10, 10, '#e8eef8');
-    px(moonX - 3, moonY - 3, 6,  6,  '#f8fbff');
+    ctx.globalAlpha = moonAlpha * 0.60;
+    px(moonX - 5, moonY - 5, 10, 10, '#d8e4f0');
+    ctx.globalAlpha = moonAlpha * 0.72;
+    px(moonX - 3, moonY - 3, 6,  6,  '#e8eef8');
     ctx.globalAlpha = 1;
   }
 
@@ -1701,9 +2063,21 @@ function drawWater(W, H, wY) {
   const phase = getDayPhase();
   const { top: waterTop, bot: waterBot, shimmer: shimmerCol } = getWaterColors(phase);
 
+  // Water cosmetic override
+  const WATER_SKINS = {
+    tea:    { top: '#7a5a00', bot: '#4a3400', shimmer: '#c8a050' },
+    lava:   { top: '#c0392b', bot: '#7b241c', shimmer: '#ff6633' },
+    slime:  { top: '#27ae60', bot: '#1a5e30', shimmer: '#2ecc71' },
+    galaxy: { top: '#1a0a3a', bot: '#0a0520', shimmer: '#9b59b6' },
+  };
+  const waterSkin = WATER_SKINS[S.cosmetics.water];
+  const wTop     = waterSkin ? waterSkin.top     : waterTop;
+  const wBot     = waterSkin ? waterSkin.bot     : waterBot;
+  const wShimmer = waterSkin ? waterSkin.shimmer : shimmerCol;
+
   const g = ctx.createLinearGradient(0, wY, 0, H);
-  g.addColorStop(0, waterTop);
-  g.addColorStop(1, waterBot);
+  g.addColorStop(0, wTop);
+  g.addColorStop(1, wBot);
   ctx.fillStyle = g;
   ctx.fillRect(0, wY, W, H - wY);
 
@@ -1712,13 +2086,13 @@ function drawWater(W, H, wY) {
     const y = wY + row * 12 + Math.sin(S.t * 0.02 + row) * 2;
     for (let x = 0; x < W; x += 18) {
       const o = Math.sin(S.t * 0.03 + x * 0.05 + row * 1.5) * 7;
-      px(x + o, y, 12, 2, shimmerCol);
+      px(x + o, y, 12, 2, wShimmer);
     }
   }
   ctx.globalAlpha = 0.08;
   for (let x = 0; x < W; x += 4) {
     const s = Math.sin(S.t * 0.05 + x * 0.12) * 1.5;
-    px(x, wY + s, 2, 2, shimmerCol);
+    px(x, wY + s, 2, 2, wShimmer);
   }
   ctx.globalAlpha = 1;
 }
@@ -1745,7 +2119,9 @@ function drawBoat(W, wY) {
     _boatRipples = _boatRipples.filter(r => r.age < 160);
     _boatRipples.forEach(r => r.age++);
 
-    const { shimmer } = getWaterColors(getDayPhase());
+    const _rippleBase = getWaterColors(getDayPhase());
+    const _rippleSkins = { tea: '#c8a050', lava: '#ff6633', slime: '#2ecc71', galaxy: '#9b59b6' };
+    const shimmer = _rippleSkins[S.cosmetics.water] || _rippleBase.shimmer;
     for (const rip of _boatRipples) {
       const rx = Math.min(44, 22 + rip.age * 0.5);
       const ry = rx * 0.18;
@@ -1783,13 +2159,12 @@ function drawBoat(W, wY) {
     // Fish pile — grows upward above the rim using session fish
     const total = S.sessionFish.length;
     if (total > 0) {
-      const visible = Math.min(total, 16);
       // Clip to hull width so fish never stick out the sides
       ctx.save();
       ctx.beginPath();
-      ctx.rect(dX - 18, dY - 90, 36, 102); // wide enough for hull, tall enough for pile
+      ctx.rect(dX - 18, dY - 200, 36, 212); // wide enough for hull, tall enough for pile
       ctx.clip();
-      for (let i = 0; i < visible; i++) {
+      for (let i = 0; i < total; i++) {
         const seed  = (i * 1664525 + 1013904223) & 0xffff;
         const t     = (seed % 1000) / 1000;
         const angle = (((seed >> 4) & 0xffff) / 0xffff - 0.5) * 0.7;
@@ -1943,6 +2318,54 @@ function drawBoat(W, wY) {
     px(bX - 5,  bY + P*2, 6, 4, lCols[(lp + 1) % 3]);
     px(bX + 12, bY + P*2, 6, 4, lCols[(lp + 2) % 3]);
 
+  } else if (boat === 'duck') {
+    // Rubber duck boat
+    px(bX - 24, bY,       50, P*2, hc1);
+    px(bX - 20, bY + P*2, 42, P,   hc2);
+    px(bX - 16, bY + P*3, 34, P,   hc2);
+    const bowSide = facingLeft ? bX - 20 : bX + 14;
+    px(bowSide,      bY - P*4,  14, 12, hc1);
+    px(bowSide + (facingLeft ? -4 : 4), bY - P*2, 8, 4, hc2);
+    px(bowSide + 4,  bY - P*4, 3, 3, '#1a1a1a');
+
+  } else if (boat === 'bathtub') {
+    // Bathtub
+    px(bX - 26, bY,       54, P*2, hc1);
+    px(bX - 22, bY + P*2, 46, P,   hc2);
+    px(bX - 28, bY - P*4, P*2, P*6, hc1);
+    px(bX + 22, bY - P*4, P*2, P*6, hc1);
+    px(bX - 22, bY - P*2,  8,   4, '#c0c0c0');
+    px(bX + 16, bY - P*2,  8,   4, '#c0c0c0');
+
+  } else if (boat === 'cardboard') {
+    // Cardboard box boat
+    px(bX - 24, bY - P*2, 50, P*4, hc1);
+    px(bX - 20, bY + P*2, 42, P,   hc2);
+    px(bX - 28, bY - P,    6, P*3, hc2);
+    px(bX + 22, bY - P,    6, P*3, hc2);
+    px(bX - 8,  bY - P*3, 18, P,   '#c8a050');
+    px(bX - 20, bY - P*3, 14, P*2, hc2);
+    px(bX + 6,  bY - P*3, 14, P*2, hc2);
+
+  } else if (boat === 'raft') {
+    // Log raft
+    px(bX - 28, bY,       58, P*2, '#8B5E3C');
+    px(bX - 28, bY - P*2, 58, P*2, '#7a4e2c');
+    px(bX - 28, bY - P*4, 58, P*2, '#6a3e1c');
+    px(bX - 16, bY - P*5, 4, P*6, '#c8a050');
+    px(bX + 12, bY - P*5, 4, P*6, '#c8a050');
+
+  } else if (boat === 'submarine') {
+    // Submarine
+    px(bX - 26, bY - P,   54, P*3, hc1);
+    px(bX - 22, bY + P*2, 46, P,   hc2);
+    px(bX - 8,  bY - P*4, 18, P*3, hc2);
+    px(bX - 4,  bY - P*7,  4, P*3, '#888888');
+    px(bX - 16, bY,  6, 5, '#c8e8ff');
+    px(bX + 10, bY,  6, 5, '#c8e8ff');
+    const torpX = facingLeft ? bX - 28 : bX + 22;
+    px(torpX, bY, 8, P*3, hc2);
+
   } else {
     // Fallback — generic hull
     px(bX - 22, bY,       50, P*2, hc1);
@@ -1961,7 +2384,12 @@ function drawBoat(W, wY) {
     const flicker = nightT > 0.05
       ? 0.85 + 0.15 * Math.sin(Date.now() / 120 + Math.sin(Date.now() / 47))
       : 1;
-    const bowX = facingLeft ? bX - 22 : bX + 18;
+    // Some boats skip the wooden lantern — they have their own aesthetics
+    if (boat === 'bathtub' || boat === 'cardboard' || boat === 'ufo') return;
+    // Duck boat: lamp mounts on stern (duck head occupies the bow)
+    const bowX = boat === 'duck'
+      ? (facingLeft ? bX + 18 : bX - 22)
+      : (facingLeft ? bX - 22 : bX + 18);
     px(bowX + 1, bY - 6, 2, 6, '#6a4a20');
     px(bowX,     bY - 9, 5, 5, '#c8a030');
     px(bowX + 1, bY - 8, 3, 3, nightT > 0.1 ? '#ffee88' : '#888840');
@@ -2088,6 +2516,101 @@ function drawBoat(W, wY) {
       ctx.ellipse(cX + 5, cY - 6, 7, 3, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.globalAlpha = 1;
+    } else if (hat === 'bucket') {
+      px(cX - 4, cY - 2, 18, 2, hc2); // brim
+      px(cX,     cY - 5, 10, 3, hc1); // crown
+      px(cX + 1, cY - 6, 8,  1, hc2); // top fold
+    } else if (hat === 'party') {
+      px(cX - 1, cY - 2, 12, 2, hc2); // brim
+      px(cX + 1, cY - 5, 8,  3, hc1);
+      px(cX + 3, cY - 8, 4,  3, hc1);
+      px(cX + 5, cY -10, 2,  2, hc1);
+      px(cX + 5, cY -11, 2,  1, '#ffd700'); // tip
+    } else if (hat === 'sombrero') {
+      px(cX - 6, cY - 2, 22, 2, hc2); // very wide brim
+      px(cX,     cY - 5, 10, 3, hc1);
+      px(cX + 1, cY - 7, 8,  2, hc1);
+      px(cX,     cY - 3, 10, 1, '#e74c3c'); // band
+    } else if (hat === 'beret') {
+      px(cX - 1, cY - 2, 12, 1, hc1);
+      px(cX,     cY - 5, 10, 3, hc1);
+      px(cX + 8, cY - 4, 4,  3, hc2); // side puff
+    } else if (hat === 'tinfoil') {
+      px(cX - 2, cY - 2, 14, 2, hc2); // brim
+      px(cX,     cY - 5, 10, 3, hc1);
+      px(cX + 1, cY - 8, 8,  3, hc1);
+      px(cX + 3, cY -10, 4,  2, hc1);
+      // Shine crease
+      ctx.fillStyle = '#ffffff88'; ctx.fillRect((cX+3), (cY-9), 2, 7);
+    }
+  }
+
+  // Buddy — swims near the boat in the water
+  {
+    const buddy = S.cosmetics.buddy || 'none';
+    if (buddy !== 'none') {
+      // Drift left/right and bob in the water behind the boat
+      // Fully independent from the boat — own drift and bob rhythms
+      const buddyDrift = Math.sin(S.t * 0.011 + 2.7) * 14;
+      const buddyBob   = Math.sin(S.t * 0.019 + 1.1) * 3;
+      const bX2 = Math.round(W * 0.44 + buddyDrift);
+      const bY2 = Math.round(wY + 30 + buddyBob);
+
+      if (buddy === 'cat') {
+        // Head + ears above water — matches shop preview (grid at 1px per unit)
+        px(bX2 + 3, bY2 - 4, 2, 2, '#888888'); // ear L
+        px(bX2 + 7, bY2 - 4, 2, 2, '#888888'); // ear R
+        px(bX2 + 3, bY2 - 3, 6, 3, '#888888'); // head
+        px(bX2 + 2, bY2 - 1, 8, 3, '#888888'); // neck/chest at waterline
+        px(bX2 + 4, bY2 - 1, 1, 1, '#1a1a1a'); // eye L
+        px(bX2 + 7, bY2 - 1, 1, 1, '#1a1a1a'); // eye R
+        px(bX2 + 5, bY2,     2, 1, '#e8a0a0'); // nose
+        // whiskers
+        ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(bX2+2, bY2); ctx.lineTo(bX2+5, bY2+1); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bX2+10, bY2); ctx.lineTo(bX2+7, bY2+1); ctx.stroke();
+      } else if (buddy === 'dog') {
+        // Doggy paddle — head + ears above water, paws alternate
+        px(bX2 + 1, bY2 - 4, 3, 4, '#a07040'); // ear L
+        px(bX2 + 8, bY2 - 4, 3, 4, '#a07040'); // ear R
+        px(bX2 + 2, bY2 - 4, 8, 3, '#c8a060'); // head
+        px(bX2 + 1, bY2 - 1, 10, 3, '#c8a060'); // body at waterline
+        px(bX2 + 4, bY2 - 3, 1, 1, '#1a1a1a'); // eye L
+        px(bX2 + 7, bY2 - 3, 1, 1, '#1a1a1a'); // eye R
+        px(bX2 + 5, bY2 - 2, 2, 1, '#cc6655'); // snout
+        // Paws alternating at surface
+        const pawSplash = Math.round(Math.abs(Math.sin(S.t * 0.08)) * 2);
+        px(bX2,     bY2 + 1 - pawSplash, 3, 2, '#c8a060'); // paw L
+        px(bX2 + 9, bY2 + 1 - (2 - pawSplash), 3, 2, '#c8a060'); // paw R
+      } else if (buddy === 'duck') {
+        // Full duck floating — matches shop preview
+        px(bX2 + 4, bY2 - 5, 4, 3, '#f1c40f'); // head
+        px(bX2 + 8, bY2 - 4, 3, 2, '#e67e22'); // beak
+        px(bX2 + 2, bY2 - 2, 8, 4, '#f1c40f'); // body
+        px(bX2 + 5, bY2 - 4, 1, 1, '#1a1a1a'); // eye
+      } else if (buddy === 'gnome') {
+        // Gnome on a tiny log — matches shop layout
+        px(bX2 - 2, bY2 + 1, 16, 3, '#8B5E3C'); // log
+        px(bX2 + 4, bY2 - 8, 4, 4, '#e74c3c'); // hat top
+        px(bX2 + 3, bY2 - 7, 6, 3, '#e74c3c'); // hat wide
+        px(bX2 + 2, bY2 - 4, 8, 2, '#f0e8d8'); // brim
+        px(bX2 + 3, bY2 - 2, 6, 3, '#c8a878'); // face
+        px(bX2 + 4, bY2 - 1, 4, 2, '#f0f0f0'); // beard
+        px(bX2 + 2, bY2 + 1, 8, 2, '#4a7a3a'); // body (on log)
+      } else if (buddy === 'parrot') {
+        // Parrot hovers above water — matches shop layout, wings animate
+        const flapY = Math.round(Math.sin(S.t * 0.07) * 4);
+        const wingSpread = Math.round(Math.abs(Math.sin(S.t * 0.07)) * 5);
+        px(bX2 + 3, bY2 - 9 + flapY,  2, 2, '#e74c3c'); // crest
+        px(bX2 + 4, bY2 - 8 + flapY,  4, 3, '#27ae60'); // head
+        px(bX2 + 7, bY2 - 7 + flapY,  3, 2, '#f39c12'); // beak
+        px(bX2 + 2, bY2 - 5 + flapY,  8, 4, '#27ae60'); // body
+        px(bX2 + 4, bY2 - 3 + flapY,  3, 2, '#f1c40f'); // chest
+        px(bX2 + 5, bY2 - 7 + flapY,  1, 1, '#1a1a1a'); // eye
+        // Wings
+        px(bX2 + 2 - wingSpread, bY2 - 5 + flapY, wingSpread + 1, 2, '#27ae60');
+        px(bX2 + 10,             bY2 - 5 + flapY, wingSpread + 1, 2, '#27ae60');
+      }
     }
   }
 
@@ -2116,13 +2639,20 @@ function drawBoat(W, wY) {
     }
     ctx.globalAlpha = 1;
   } else if (S.mood === 'focused') {
-    // Pixel-art speech bubble — cheerful, bright
-    const bx = cX + 12, by = cY - 32, bw = 16, bh = 14;
-    ctx.globalAlpha = 0.9 + Math.sin(S.t * 0.1) * 0.1;
-    // Bubble body — soft white
+    // Pixel-art speech bubble — shows tool quip or default !
+    const quipActive = S.toolQuip.timer > 0;
+    const quipText   = quipActive ? S.toolQuip.text : '!';
+    ctx.font = quipActive ? 'italic 9px Courier New' : 'bold 10px Courier New';
+    const textW = ctx.measureText(quipText).width;
+    const bw = Math.max(16, Math.round(textW + 10));
+    const bh = 14;
+    const bx = cX + 12, by = cY - 32;
+    const fadeAlpha = quipActive ? Math.min(1, S.toolQuip.timer / 30) : 1;
+    ctx.globalAlpha = (0.9 + Math.sin(S.t * 0.1) * 0.1) * fadeAlpha;
+    // Bubble body
     ctx.fillStyle = '#f0eeff';
     ctx.fillRect(bx, by, bw, bh);
-    // Border — periwinkle
+    // Border
     ctx.fillStyle = '#9090dd';
     ctx.fillRect(bx,          by,          bw, 1);
     ctx.fillRect(bx,          by + bh - 1, bw, 1);
@@ -2135,11 +2665,10 @@ function drawBoat(W, wY) {
     ctx.fillStyle = '#9090dd';
     ctx.fillRect(bx + 3, by + bh,     1, 2);
     ctx.fillRect(bx + 6, by + bh,     1, 2);
-    // !
-    ctx.font = 'bold 10px Courier New';
-    ctx.fillStyle = '#e67e22';
+    // Text
+    ctx.fillStyle = quipActive ? '#2c3e50' : '#e67e22';
     ctx.textAlign = 'center';
-    ctx.fillText('!', bx + bw / 2, by + bh - 3);
+    ctx.fillText(quipText, bx + bw / 2, by + bh - 3);
     ctx.textAlign = 'left';
     ctx.globalAlpha = 1;
   } else if (S.mood === 'sleepy') {
@@ -2170,21 +2699,23 @@ function drawBoat(W, wY) {
     const nightT = phase < 0.25 ? 1 - phase / 0.25
                  : phase > 0.75 ? (phase - 0.75) / 0.25
                  : 0;
-    if (nightT > 0.05) {
+    if (nightT > 0.05 && boat !== 'bathtub' && boat !== 'cardboard' && boat !== 'ufo') {
       const flicker = 0.88 + 0.12 * Math.sin(Date.now() / 130 + Math.sin(Date.now() / 53));
       const strength = nightT * flicker;
-      const bowX  = (facingLeft ? bX - 19 : bX + 21);
+      const bowX  = boat === 'duck'
+        ? (facingLeft ? bX + 21 : bX - 19)
+        : (facingLeft ? bX - 19 : bX + 21);
       const lightY = bY - 7;
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
 
       const g1 = ctx.createRadialGradient(bowX, lightY, 0, bowX, lightY, 300);
-      g1.addColorStop(0,   `rgba(255, 230, 140, ${0.88 * strength})`);
-      g1.addColorStop(0.15, `rgba(255, 215, 100, ${0.62 * strength})`);
-      g1.addColorStop(0.35, `rgba(255, 185, 55,  ${0.38 * strength})`);
-      g1.addColorStop(0.6, `rgba(255, 150, 20,  ${0.18 * strength})`);
-      g1.addColorStop(0.85, `rgba(255, 110, 5,  ${0.07 * strength})`);
+      g1.addColorStop(0,   `rgba(255, 220, 120, ${0.38 * strength})`);
+      g1.addColorStop(0.15, `rgba(255, 200, 80,  ${0.24 * strength})`);
+      g1.addColorStop(0.35, `rgba(255, 170, 40,  ${0.13 * strength})`);
+      g1.addColorStop(0.6, `rgba(255, 130, 10,  ${0.06 * strength})`);
+      g1.addColorStop(0.85, `rgba(255, 90,  0,   ${0.02 * strength})`);
       g1.addColorStop(1,   'rgba(255, 80, 0, 0)');
       ctx.fillStyle = g1;
       ctx.beginPath(); ctx.ellipse(bowX, lightY + 20, 300, 200, 0, 0, Math.PI * 2); ctx.fill();
@@ -2563,6 +3094,22 @@ function drawFish(f, wY) {
   }
 }
 
+const TOOL_QUIPS = {
+  Read:      ['light reading', 'page turner', 'absorbing...', 'reading again?'],
+  Write:     ['manifesting...', 'putting it down', 'scribbling', 'ink is wet'],
+  Edit:      ['minor surgery', 'one sec...', 'tweaking...', 'almost perfect'],
+  Bash:      ['yolo...', 'fingers crossed', 'running it', 'no sudo tho'],
+  Grep:      ['ctrl+F irl', 'needle & haystack', 'looking...', 'found it!'],
+  Glob:      ['casting wide', 'scanning...', 'where is it...'],
+  WebFetch:  ['going online', 'dial-up noises', 'buffering...', 'web surfing'],
+  WebSearch: ['googling it', 'asking the web', 'brb wiki'],
+  Task:      ['outsourcing', 'delegating', 'subcontracting', 'not my problem'],
+  Agent:     ['phoning a friend', 'calling backup', 'bringing help'],
+  TodoWrite: ['making a list', 'very organized', 'sticky note time'],
+  NotebookEdit: ['jupyter things', 'science!', 'data wrangling'],
+};
+const DEFAULT_QUIPS = ['on it', 'hm...', 'interesting', 'working...', 'doing stuff', 'uh huh', 'mhm...', 'sure sure'];
+
 const THINKING_PHRASES = [
   'angling', 'trolling', 'jigging', 'trawling', 'casting',
   'drowning worms', 'wetting a line', 'tempting the deep',
@@ -2645,6 +3192,7 @@ function loop() {
   if (S.bobberDip > 0) S.bobberDip = Math.max(0, S.bobberDip - 0.4);
   if (S.smileTimer > 0) S.smileTimer--;
   if (S.catchCooldown > 0) S.catchCooldown--;
+  if (S.toolQuip.timer > 0) S.toolQuip.timer--;
 
   // Drain queue — process next event when pond is clear
   if (S.activeFish.length === 0 && S.catchCooldown === 0 && S.fishQueue.length > 0) {

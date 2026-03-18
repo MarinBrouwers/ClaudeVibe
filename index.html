@@ -361,7 +361,7 @@
       color: #e67e22;
       border-color: #e67e2255;
     }
-    .shop-item.cant-afford { opacity: 0.5; }
+    .shop-item.cant-afford { opacity: 1; }
     .shop-item.equipped { border-left: 2px solid var(--accent-dim); background: var(--panel-equip); }
     .shop-icon-wrap {
       width: 28px; height: 28px;
@@ -409,7 +409,7 @@
       transition: border-color 0.1s, background 0.1s;
     }
     .shop-buy-btn:hover { border-color: #f1c40f; background: var(--btn-hover); }
-    .shop-buy-btn:disabled { opacity: 0.3; cursor: default; border-color: var(--border); color: var(--text3); }
+    .shop-buy-btn:disabled { opacity: 1; cursor: default; border-color: #7b241c; background: #1a0a08; color: #e74c3c; }
     .shop-buy-btn.maxed-btn { color: #2ecc71; border-color: #1a3a2a; background: #091510; cursor: default; }
     #shop-tabs {
       display: flex;
@@ -505,6 +505,8 @@
       <button class="shop-tab" id="shop-tab-rod">RODS</button>
       <button class="shop-tab" id="shop-tab-bobber">BOBBERS</button>
       <button class="shop-tab" id="shop-tab-lure">LURES</button>
+      <button class="shop-tab" id="shop-tab-buddy">BUDDY</button>
+      <button class="shop-tab" id="shop-tab-water">WATER</button>
     </div>
     <div id="shop-items"></div>
   </div>

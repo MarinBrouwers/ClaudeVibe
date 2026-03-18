@@ -124,6 +124,33 @@ Items unlock at higher levels — check the `LVL X` badge on each item.
 
 ## Changelog
 
+### v1.3.0 — Cosmetics overhaul, buddies & polish
+
+**New cosmetics — 30+ items across all categories, redistributed across levels 1–20:**
+- **Hats:** Bucket Hat, Party Hat, Sombrero, Beret, Tinfoil Hat
+- **Boats:** Rubber Duck, Bathtub, Cardboard Box, Log Raft, Submarine
+- **Rods:** Pool Noodle, Magic Wand, Selfie Stick, Plunger, Lightsaber, Trident
+- **Bobbers:** Pizza Slice, Heart, Rubber Duck, Skull, Gem, Ring
+- **Lures:** Hotdog, Shiny Coin, Mini Duck, Ghost, Sausage, Cheese
+
+**New shop categories:**
+- **BUDDY** — a companion that swims near your boat (Cat, Dog, Duck, Garden Gnome, Parrot). Each has unique animations: dog paddles, duck floats, parrot hovers with flapping wings, cat reluctantly swims, gnome clings to a log
+- **WATER** — reskin the pond: Earl Grey, Lava Pond, Slime Pit, Galaxy Water
+
+**Fisherman chat bubbles** — occasionally mutters a tool-specific quip above his head ("ctrl+F irl" for Grep, "yolo..." for Bash, etc.)
+
+**Shop UX fixes:**
+- Can't-afford items now show clearly in red with exact shortfall ("need 42 more 🪙") instead of greying everything out
+
+**Night & lighting fixes:**
+- Moon brightness toned down at midnight
+- Bow lamp intensity reduced (was blowing out the scene)
+- Lamp repositioned for Duck boat (mounts on stern); skipped entirely for Bathtub, Cardboard, UFO
+
+**Dinghy fixes:**
+- Hull widened to 36px with `ctx.clip()` — fish pile no longer overflows the sides
+- Fish pile cap removed — pile grows as tall as needed
+
 ### v1.2.0 — Dinghy & polish update
 - **Dinghy trailing boat** — a small boat hangs on a rope behind you; caught fish pile up inside it
 - **Session fish pile** — fish accumulate in the dinghy during your session and clear on restart; the pile grows upward above the rim as more fish are caught
