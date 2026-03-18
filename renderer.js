@@ -137,20 +137,30 @@ document.getElementById('music-vol').oninput = (e) => {
   if (_musicGain && !mutedMusic) _musicGain.gain.value = musicVolume;
 };
 
-// Music button: start if off, instant mute/unmute if playing — show/hide music slider
+// Music button: start if off, mute/unmute if playing
 document.getElementById('btn-music').onclick = async () => {
   await startTone();
   if (!chillPlaying) {
     mutedMusic = false;
-    startChillstep();
-    document.getElementById('music-vol-group').style.display = 'flex';
+    startTrack(_currentTrackIdx);
   } else {
     mutedMusic = !mutedMusic;
     if (_musicGain) _musicGain.gain.value = mutedMusic ? 0 : musicVolume;
-    const bm = document.getElementById('btn-music');
-    bm.textContent = mutedMusic ? '🔇' : '⏸';
-    bm.className = mutedMusic ? 'muted' : 'active';
+    updateMusicBtn();
     document.getElementById('music-vol-group').style.display = mutedMusic ? 'none' : 'flex';
+  }
+};
+
+// Next track button — cycles through all 5 tracks
+document.getElementById('btn-next-track').onclick = async () => {
+  await startTone();
+  const next = (_currentTrackIdx + 1) % TRACKS.length;
+  if (chillPlaying) {
+    startTrack(next);
+  } else {
+    _currentTrackIdx = next;
+    const nameEl = document.getElementById('music-track-name');
+    if (nameEl) nameEl.textContent = TRACKS[next].emoji + ' ' + TRACKS[next].name;
   }
 };
 
@@ -202,126 +212,192 @@ document.getElementById('btn-lib').onclick = () => {
   if (panel.classList.contains('visible')) renderLibPanel();
 };
 
-// ── Chillstep generator ───────────────────────────────────────────────────────
+// ── Multi-track music system ──────────────────────────────────────────────────
+
+const TRACKS = [
+  { id: 'lofi',    name: 'Night Lo-fi',    emoji: '🌙' },
+  { id: 'morning', name: 'Morning Chill',  emoji: '☀️' },
+  { id: 'ocean',   name: 'Ocean Drift',    emoji: '🌊' },
+  { id: 'forest',  name: 'Forest Ambient', emoji: '🌲' },
+  { id: 'focus',   name: 'Focus Mode',     emoji: '⚡' },
+];
 
 let chillPlaying = false;
-let _chillInited = false;
 let _musicGain;
-let _pad, _chillArp, _chillBass, _kick, _snare, _hat;
-let _chordSeq, _arpSeq, _kickSeq, _snareSeq, _hatSeq;
+let _activeSeqs   = [];
+let _activeSynths = [];
+let _currentTrackIdx = 0;
 
-let _crackle, _padLayer2;
-
-function initChillstep() {
-  if (_chillInited) return;
-  _chillInited = true;
-
-  Tone.Transport.bpm.value = 75;
-  Tone.Transport.swing = 0.12;
-  Tone.Transport.swingSubdivision = '8n';
-
+function initMusicGain() {
+  if (_musicGain) return;
   _musicGain = new Tone.Gain(1.4).toDestination();
-  const warmVerb = new Tone.Reverb({ decay: 2.5, wet: 0.32 }).connect(_musicGain);
-  const arpDelay = new Tone.FeedbackDelay('8n', 0.22).connect(warmVerb);
-
-  // Warm sine pads — very soft, two detuned layers
-  _pad = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'sine' },
-    envelope: { attack: 2.0, decay: 0.5, sustain: 0.9, release: 5.0 },
-    volume: -22,
-  }).connect(warmVerb);
-  _padLayer2 = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'sine', detune: 7 },
-    envelope: { attack: 2.6, decay: 0.5, sustain: 0.9, release: 5.0 },
-    volume: -26,
-  }).connect(warmVerb);
-
-  // PluckSynth arp — muted guitar feel
-  _chillArp = new Tone.PluckSynth({
-    attackNoise: 0.6, dampening: 2200, resonance: 0.94, volume: -16,
-  }).connect(arpDelay);
-
-  // Warm bass
-  _chillBass = new Tone.Synth({
-    oscillator: { type: 'sine' },
-    envelope: { attack: 0.05, decay: 0.25, sustain: 0.1, release: 0.3 },
-    volume: -10,
-  }).connect(_musicGain);
-
-  // Kick
-  _kick = new Tone.MembraneSynth({
-    pitchDecay: 0.05, octaves: 6,
-    envelope: { attack: 0.001, decay: 0.28, sustain: 0, release: 0.1 },
-    volume: -12,
-  }).connect(_musicGain);
-
-  // Lo-fi snare — lowpass filtered (muffled, not crisp)
-  _snare = new Tone.NoiseSynth({
-    noise: { type: 'white' },
-    envelope: { attack: 0.001, decay: 0.14, sustain: 0, release: 0.05 },
-    volume: -20,
-  }).connect(new Tone.Filter(2200, 'lowpass').connect(_musicGain));
-
-  // Soft hi-hats
-  _hat = new Tone.NoiseSynth({
-    noise: { type: 'white' },
-    envelope: { attack: 0.001, decay: 0.035, sustain: 0, release: 0.01 },
-    volume: -30,
-  }).connect(new Tone.Filter(9000, 'highpass').connect(_musicGain));
-
-
-  // Jazz-flavoured lo-fi chords: Fmaj9 → Em7 → Dm7 → G7
-  _chordSeq = new Tone.Sequence((time, data) => {
-    _chillBass.triggerAttackRelease(data.bass, '2n', time);
-  }, [
-    { chord: ['A3','C4','E4'], bass: 'F2' },  // Fmaj
-    { chord: ['G3','B3','D4'], bass: 'E2' },  // Em
-    { chord: ['F3','A3','C4'], bass: 'D2' },  // Dm
-    { chord: ['G3','B3','D4'], bass: 'G2' },  // G
-  ], '1m');
-
-  // Sparse pluck arp — breathes, doesn't crowd
-  _arpSeq = new Tone.Sequence((time, note) => {
-    if (note) _chillArp.triggerAttackRelease(note, '8n', time);
-  }, [
-    'F4', null, null, 'A4', null, 'C5', null, null,  // Fmaj9
-    'E4', null, null, 'G4', null, 'B4', null, null,  // Em7
-    'D4', null, null, 'F4', null, 'A4', null, null,  // Dm7
-    'G4', null, null, 'B4', null, 'D5', null, 'F4',  // G7
-  ], '8n');
-
-  // Half-time drums
-  _kickSeq  = new Tone.Sequence((time, v) => {
-    if (v) _kick.triggerAttackRelease('C1', '8n', time);
-  }, [1,0,0,0, 0,0,0,0, 0,0,1,0, 0,0,0,0], '16n');
-
-  _snareSeq = new Tone.Sequence((time, v) => {
-    if (v) _snare.triggerAttackRelease('16n', time);
-  }, [0,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0], '16n');
-
-  _hatSeq   = new Tone.Sequence((time, v) => {
-    if (v) _hat.triggerAttackRelease('32n', time);
-  }, [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,1], '16n');
 }
 
-function startChillstep() {
+function stopCurrentTrack() {
+  // Zero gain immediately so long-release envelopes don't bleed into next track
+  if (_musicGain) {
+    _musicGain.gain.cancelScheduledValues(Tone.now());
+    _musicGain.gain.setValueAtTime(0, Tone.now());
+  }
+  _activeSeqs.forEach(s => { try { s.stop(); s.dispose(); } catch(_){} });
+  _activeSeqs = [];
+  _activeSynths.forEach(n => { try { n.dispose(); } catch(_){} });
+  _activeSynths = [];
+  Tone.Transport.stop();
+  Tone.Transport.cancel();
+}
+
+function buildTrack(idx) {
+  initMusicGain();
+  const seqs = [];
+  const nodes = []; // all synths/effects to dispose on track stop
+
+  if (idx === 0) {
+    // 🌙 Night Lo-fi — 75bpm, pluck arp + soft drums, no pads
+    Tone.Transport.bpm.value = 75;
+    Tone.Transport.swing = 0.12;
+    Tone.Transport.swingSubdivision = '8n';
+    const verb  = new Tone.Reverb({ decay: 2.5, wet: 0.32 }).connect(_musicGain);
+    const dly   = new Tone.FeedbackDelay('8n', 0.22).connect(verb);
+    const arp   = new Tone.PluckSynth({ attackNoise: 0.6, dampening: 2200, resonance: 0.94, volume: -12 }).connect(dly);
+    const kick  = new Tone.MembraneSynth({ pitchDecay: 0.04, octaves: 4, envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.08 }, volume: -16 }).connect(_musicGain);
+    const snareFlt = new Tone.Filter(2200, 'lowpass').connect(_musicGain);
+    const snare = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.04 }, volume: -22 }).connect(snareFlt);
+    const hatFlt = new Tone.Filter(9000, 'highpass').connect(_musicGain);
+    const hat   = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.03, sustain: 0, release: 0.01 }, volume: -30 }).connect(hatFlt);
+    nodes.push(verb, dly, arp, kick, snareFlt, snare, hatFlt, hat);
+    seqs.push(
+      new Tone.Sequence((t, n) => { if(n) arp.triggerAttackRelease(n,'8n',t); },
+        ['F4',null,null,'A4',null,'C5',null,null,'E4',null,null,'G4',null,'B4',null,null,'D4',null,null,'F4',null,'A4',null,null,'G4',null,null,'B4',null,'D5',null,'F4'], '8n'),
+      new Tone.Sequence((t,v) => { if(v) kick.triggerAttackRelease('C2','8n',t); },  [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0], '16n'),
+      new Tone.Sequence((t,v) => { if(v) snare.triggerAttackRelease('16n',t); },     [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0], '16n'),
+      new Tone.Sequence((t,v) => { if(v) hat.triggerAttackRelease('32n',t); },       [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1], '16n'),
+    );
+
+  } else if (idx === 1) {
+    // ☀️ Morning Chill — 88bpm, bright plucky melody + light drums, no pads
+    Tone.Transport.bpm.value = 88;
+    Tone.Transport.swing = 0.06;
+    Tone.Transport.swingSubdivision = '8n';
+    const verb  = new Tone.Reverb({ decay: 1.5, wet: 0.25 }).connect(_musicGain);
+    const dly   = new Tone.FeedbackDelay('8n', 0.15).connect(verb);
+    const mel   = new Tone.PluckSynth({ attackNoise: 0.5, dampening: 4000, resonance: 0.9, volume: -10 }).connect(dly);
+    const kick  = new Tone.MembraneSynth({ pitchDecay: 0.03, octaves: 4, envelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.06 }, volume: -18 }).connect(_musicGain);
+    const hatFlt = new Tone.Filter(10000, 'highpass').connect(_musicGain);
+    const hat   = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.02, sustain: 0, release: 0.01 }, volume: -28 }).connect(hatFlt);
+    nodes.push(verb, dly, mel, kick, hatFlt, hat);
+    seqs.push(
+      new Tone.Sequence((t,n) => { if(n) mel.triggerAttackRelease(n,'8n',t); },
+        ['E5',null,'G5',null,'B5',null,null,'E5','A4',null,'C5',null,null,'E5',null,null,'F5',null,'A5',null,'C6',null,null,null,'G5',null,'B5',null,'D6',null,null,null], '8n'),
+      new Tone.Sequence((t,v) => { if(v) kick.triggerAttackRelease('C2','8n',t); }, [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0], '16n'),
+      new Tone.Sequence((t,v) => { if(v) hat.triggerAttackRelease('32n',t); },      [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0], '16n'),
+    );
+
+  } else if (idx === 2) {
+    // 🌊 Ocean Drift — 62bpm, no drums, sparse pluck melody + bells, no pads
+    Tone.Transport.bpm.value = 62;
+    Tone.Transport.swing = 0;
+    Tone.Transport.swingSubdivision = '8n';
+    const verb = new Tone.Reverb({ decay: 3.5, wet: 0.45 }).connect(_musicGain);
+    const dly  = new Tone.FeedbackDelay('4n', 0.2).connect(verb);
+    const mel  = new Tone.PluckSynth({ attackNoise: 0.3, dampening: 5000, resonance: 0.92, volume: -12 }).connect(dly);
+    const bell = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.001, decay: 1.5, sustain: 0, release: 2.5 }, volume: -18 }).connect(verb);
+    nodes.push(verb, dly, mel, bell);
+    seqs.push(
+      new Tone.Sequence((t,n) => { if(n) mel.triggerAttackRelease(n,'4n',t); },
+        ['A4',null,null,null,'E4',null,null,null,'F4',null,null,null,'C5',null,null,null,'C4',null,null,null,'G4',null,null,null,'E4',null,null,null,'B4',null,null,null], '8n'),
+      new Tone.Sequence((t,n) => { if(n) bell.triggerAttackRelease(n,'8n',t); },
+        ['E5',null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'A5',null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], '8n'),
+    );
+
+  } else if (idx === 3) {
+    // 🌲 Forest Ambient — 65bpm, no drums, sparse plucks + high bells only
+    Tone.Transport.bpm.value = 65;
+    Tone.Transport.swing = 0;
+    Tone.Transport.swingSubdivision = '8n';
+    const verb  = new Tone.Reverb({ decay: 5.0, wet: 0.55 }).connect(_musicGain);
+    const pluck = new Tone.PluckSynth({ attackNoise: 0.2, dampening: 4500, resonance: 0.96, volume: -12 }).connect(verb);
+    const bell  = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.001, decay: 1.8, sustain: 0, release: 2.5 }, volume: -18 }).connect(verb);
+    const chime = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.001, decay: 0.8, sustain: 0, release: 1.5 }, volume: -22 }).connect(verb);
+    nodes.push(verb, pluck, bell, chime);
+    seqs.push(
+      new Tone.Sequence((t,n) => { if(n) pluck.triggerAttackRelease(n,'4n',t); },
+        ['G4',null,null,null,null,null,'D5',null,null,null,null,null,null,null,null,null,'A4',null,null,null,null,null,null,null,'E5',null,null,null,null,null,null,null], '8n'),
+      new Tone.Sequence((t,n) => { if(n) bell.triggerAttackRelease(n,'8n',t); },
+        ['G5',null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'D5',null,null,null,null,null,null,null], '8n'),
+      new Tone.Sequence((t,n) => { if(n) chime.triggerAttackRelease(n,'8n',t); },
+        [null,null,null,null,null,null,null,null,'B5',null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'E6',null,null,null], '8n'),
+    );
+
+  } else if (idx === 4) {
+    // ⚡ Focus Mode — 100bpm, driving, energetic, bright arps + punchy drums
+    Tone.Transport.bpm.value = 100;
+    Tone.Transport.swing = 0.06;
+    Tone.Transport.swingSubdivision = '8n';
+    const verb  = new Tone.Reverb({ decay: 1.0, wet: 0.15 }).connect(_musicGain);
+    const dly   = new Tone.FeedbackDelay('16n', 0.15).connect(verb);
+    const pad   = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: 0.04, decay: 0.12, sustain: 0.2, release: 0.3 }, volume: -28 }).connect(verb);
+    const arp   = new Tone.PluckSynth({ attackNoise: 0.8, dampening: 3000, resonance: 0.92, volume: -12 }).connect(dly);
+    const kick  = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 5, envelope: { attack: 0.001, decay: 0.25, sustain: 0, release: 0.08 }, volume: -12 }).connect(_musicGain);
+    const snareFlt = new Tone.Filter(3500, 'lowpass').connect(_musicGain);
+    const snare = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.03 }, volume: -20 }).connect(snareFlt);
+    const hatFlt = new Tone.Filter(10000, 'highpass').connect(_musicGain);
+    const hat   = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.018, sustain: 0, release: 0.01 }, volume: -26 }).connect(hatFlt);
+    nodes.push(verb, dly, pad, arp, kick, snareFlt, snare, hatFlt, hat);
+    seqs.push(
+      new Tone.Sequence((t,c) => { pad.triggerAttackRelease(c,'1m',t); },
+        [['A3','C4','E4'],['F3','A3','C4'],['C4','E4','G4'],['G3','B3','D4']], '1m'),
+      new Tone.Sequence((t,n) => { if(n) arp.triggerAttackRelease(n,'16n',t); },
+        ['A4','C5','E5','A5',null,'C5','E5',null,'F4','A4','C5',null,null,'A4','C5',null,'C5','E5','G5','C6',null,'E5','G5',null,'G4','B4','D5',null,null,'B4','D5',null], '16n'),
+      new Tone.Sequence((t,v) => { if(v) kick.triggerAttackRelease('C2','8n',t); },  [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0], '16n'),
+      new Tone.Sequence((t,v) => { if(v) snare.triggerAttackRelease('16n',t); },     [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0], '16n'),
+      new Tone.Sequence((t,v) => { if(v) hat.triggerAttackRelease('32n',t); },       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], '16n'),
+    );
+  }
+
+  _activeSynths = nodes;
+  return seqs;
+}
+
+function startTrack(idx) {
   if (!toneReady) return;
-  initChillstep();
-  _chordSeq.start(0); _arpSeq.start(0);
-  _kickSeq.start(0);  _snareSeq.start(0); _hatSeq.start(0);
+  stopCurrentTrack();
+  _currentTrackIdx = idx;
+  _activeSeqs = buildTrack(idx);
+  _activeSeqs.forEach(s => s.start(0));
+  // Restore gain after silencing old track
+  if (_musicGain && !mutedMusic) {
+    _musicGain.gain.setValueAtTime(musicVolume, Tone.now());
+  }
   Tone.Transport.start();
   chillPlaying = true;
-  const _bm = document.getElementById('btn-music');
-  _bm.textContent = '⏸'; _bm.className = 'active';
+  updateMusicBtn();
 }
 
-function stopChillstep() {
-  [_chordSeq, _arpSeq, _kickSeq, _snareSeq, _hatSeq].forEach(s => s && s.stop());
-  Tone.Transport.stop();
+function stopMusic() {
+  stopCurrentTrack();
   chillPlaying = false;
-  const _bms = document.getElementById('btn-music');
-  _bms.textContent = '🎵'; _bms.className = '';
+  updateMusicBtn();
   document.getElementById('music-vol-group').style.display = 'none';
+}
+
+function updateMusicBtn() {
+  const btn     = document.getElementById('btn-music');
+  const track   = TRACKS[_currentTrackIdx];
+  const nameEl  = document.getElementById('music-track-name');
+  const nextBtn = document.getElementById('btn-next-track');
+  const active  = chillPlaying && !mutedMusic;
+  if (active) {
+    btn.textContent = '⏸'; btn.className = 'active';
+    if (nameEl) nameEl.textContent = track.emoji + ' ' + track.name;
+    document.getElementById('music-vol-group').style.display = 'flex';
+  } else if (mutedMusic) {
+    btn.textContent = '🔇'; btn.className = 'muted';
+  } else {
+    btn.textContent = '🎵'; btn.className = '';
+    if (nameEl) nameEl.textContent = '';
+  }
+  if (nextBtn) nextBtn.style.display = active ? 'inline-flex' : 'none';
 }
 
 // ── Canvas ────────────────────────────────────────────────────────────────────
@@ -915,9 +991,20 @@ function drawShopPreview(canvas, category, id) {
       p(4,3, bc.top, 4, 4);      // top half
       p(4,7, bc.bot, 4, 3);      // bottom half
       if (bc.glows) {
-        c.shadowColor = bc.top; c.shadowBlur = 8;
-        c.fillStyle = bc.top + '44';
-        c.beginPath(); c.arc(6*s, 6*s, 5*s, 0, Math.PI*2); c.fill();
+        const pulse = 0.7 + 0.3 * Math.sin(Date.now() / 280);
+        // Outer soft halo
+        c.shadowColor = bc.top;
+        c.shadowBlur = Math.round(22 * pulse);
+        c.fillStyle = bc.top + '18';
+        c.beginPath(); c.arc(6*s, 6*s, 8*s, 0, Math.PI*2); c.fill();
+        // Mid glow ring
+        c.shadowBlur = Math.round(14 * pulse);
+        c.fillStyle = bc.top + '33';
+        c.beginPath(); c.arc(6*s, 6*s, 6*s, 0, Math.PI*2); c.fill();
+        // Inner bright core
+        c.shadowBlur = Math.round(8 * pulse);
+        c.fillStyle = bc.top + '66';
+        c.beginPath(); c.arc(6*s, 6*s, 4*s, 0, Math.PI*2); c.fill();
         c.shadowBlur = 0;
       }
     }
@@ -1193,6 +1280,12 @@ const S = {
   castAnim: null,     // { phase:'swing'|'fly', t:0, targetX, targetY }
   reelTickTimer: 0,
   zoom: 1.0,
+  panX: 0,
+  panY: 0,
+  smileTimer: 0,
+  catchCooldown: 0, // frames to wait after catch before next fish can spawn
+  sessionFish: [],  // fish caught this session only — cleared on restart
+  fishQueue: [],    // queued events: { type: 'cast' } or { type: 'fish', tool }
   theme: 'dark',
 };
 
@@ -1323,25 +1416,20 @@ window.claude.onGameEvent(event => {
 
   if (event.type === 'cast') {
     S.isActive = true;
-    S.activeFish = [];
     S.mood = 'focused';
-    const side = Math.random() > 0.5 ? 1 : -1;
-    // Keep bobber well inside screen: tip ~bX±46, limit offset so bobber stays in [80, W-80]
-    const W_ = canvas.width;
-    const tipApprox = W_ * 0.44 + side * 46;
-    const maxOff = Math.min(140, (side > 0 ? W_ - 80 - tipApprox : tipApprox - 80));
-    S.cast.offset    = side * (60 + Math.random() * Math.max(0, maxOff - 60));
-    S.cast.depthLine = 35 + Math.random() * 70;
-    S.bobberDip = 0;
-    // Start cast animation: swing → fly
-    S.castAnim = { phase: 'swing', t: 0 };
+    // If pond is clear, cast immediately; otherwise queue the re-cast
+    if (S.activeFish.length === 0 && S.fishQueue.length === 0 && S.catchCooldown === 0) {
+      doCast();
+    } else {
+      S.fishQueue.push({ type: 'cast' });
+    }
     const leveled = addXP(10, canvas.width * 0.5, S._wY - 30);
     if (leveled) flashLevelUp();
     updateStats();
   }
 
   else if (event.type === 'tool_use' && event.tool) {
-    spawnFish(event.tool);
+    S.fishQueue.push({ type: 'fish', tool: event.tool });
     tickDailyChallenge(event.tool, null);
   }
 
@@ -1352,8 +1440,18 @@ window.claude.onGameEvent(event => {
   }
 });
 
+function doCast() {
+  const side = Math.random() > 0.5 ? 1 : -1;
+  const W_ = canvas.width;
+  const tipApprox = W_ * 0.44 + side * 46;
+  const maxOff = Math.min(140, (side > 0 ? W_ - 80 - tipApprox : tipApprox - 80));
+  S.cast.offset    = side * (60 + Math.random() * Math.max(0, maxOff - 60));
+  S.cast.depthLine = 35 + Math.random() * 70;
+  S.bobberDip = 0;
+  S.castAnim = { phase: 'swing', t: 0 };
+}
+
 function spawnFish(toolName) {
-  if (S.activeFish.length >= 1) return;
   const def  = fishForTool(toolName);
   const rare = Math.random() < 0.05;
   const W    = canvas.width;
@@ -1365,6 +1463,7 @@ function spawnFish(toolName) {
   const spawnY = isLure_
     ? S._wY + 8 + (Math.random() - 0.5) * 6   // near surface — horizontal attack
     : S._wY + S.cast.depthLine + (Math.random() - 0.5) * 20; // deep underwater
+  const W2 = canvas.width;
   S.activeFish.push({
     type:  def.type,
     color: rare ? '#ffd700' : def.color,
@@ -1374,6 +1473,8 @@ function spawnFish(toolName) {
     x: spawnX, y: spawnY,
     isLure: isLure_,
     biteTimer: 0, progress: 0, reelStartY: spawnY, reelStartX: spawnX,
+    facingLeft: spawnX > W2 / 2, // spawned from right → swims left, from left → swims right
+    thought: THINKING_PHRASES[Math.floor(Math.random() * THINKING_PHRASES.length)],
   });
 }
 
@@ -1546,12 +1647,25 @@ function drawSky(W, wY) {
     ctx.globalAlpha = 1;
   }
 
-  // Moon — visible at night
+  // Moon — arcs across the night sky (phase 0.75 → 0.0 → 0.25)
   const moonAlpha = phase < 0.18 ? 1
     : phase < 0.28 ? 1 - (phase - 0.18) / 0.10
     : phase > 0.72 ? (phase - 0.72) / 0.10
     : 0;
 
+  if (moonAlpha > 0.01) {
+    const moonPhase = phase >= 0.75 ? (phase - 0.75) / 0.5 : (phase + 0.25) / 0.5;
+    const arcHeight = wY * 0.72;
+    const moonX = moonPhase * (W + 20) - 10;
+    const moonY = wY - arcHeight * Math.sin(moonPhase * Math.PI) - 10;
+    ctx.globalAlpha = moonAlpha * 0.92;
+    // Glow
+    px(moonX - 7, moonY - 7, 14, 14, '#c8d8f0');
+    // Full moon disc
+    px(moonX - 5, moonY - 5, 10, 10, '#e8eef8');
+    px(moonX - 3, moonY - 3, 6,  6,  '#f8fbff');
+    ctx.globalAlpha = 1;
+  }
 
   // Clouds
   updateClouds(W);
@@ -1609,6 +1723,9 @@ function drawWater(W, H, wY) {
   ctx.globalAlpha = 1;
 }
 
+let _boatRipples = [];
+let _lastRippleTick = -999;
+
 function drawBoat(W, wY) {
   const bX = W * 0.44;
   const bobAmp = S.mood === 'sleepy' ? 3 : 1.5;
@@ -1617,6 +1734,83 @@ function drawBoat(W, wY) {
 
   // Character position — defined early so hull shapes can reference it
   const cX = bX - 2, cY = bY - 19;
+
+  // Hull ripples — spawn at bottom of bob, drawn before hull
+  {
+    const bobSin = Math.sin(S.t * 0.025);
+    if (bobSin < -0.92 && S.t - _lastRippleTick > 80) {
+      _boatRipples.push({ age: 0 });
+      _lastRippleTick = S.t;
+    }
+    _boatRipples = _boatRipples.filter(r => r.age < 160);
+    _boatRipples.forEach(r => r.age++);
+
+    const { shimmer } = getWaterColors(getDayPhase());
+    for (const rip of _boatRipples) {
+      const rx = Math.min(44, 22 + rip.age * 0.5);
+      const ry = rx * 0.18;
+      const rippleY = wY + ry;
+      const alpha = Math.max(0, 0.45 - rip.age * (0.45 / 160));
+      if (alpha < 0.01) continue;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = shimmer;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.ellipse(bX, rippleY, rx, ry, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // ── Dinghy — drawn before main hull so it sits behind ──
+  {
+    const dinghyBob = Math.sin(S.t * 0.025 + 1.2) * 1.5;
+    const side = facingLeft ? 1 : -1; // opposite side from cast
+    const ropeAttachX = facingLeft ? bX + 25 : bX - 25;
+    const ropeAttachY = bY - 2;
+    const dX = bX + side * 72;
+    const dY = wY - 3 + dinghyBob;
+
+    // Rope
+    ctx.strokeStyle = '#8a7060';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(ropeAttachX, ropeAttachY);
+    ctx.quadraticCurveTo((ropeAttachX + dX) * 0.5, Math.max(ropeAttachY, dY) + 8, dX, dY - 2);
+    ctx.stroke();
+
+    // Fish pile — grows upward above the rim using session fish
+    const total = S.sessionFish.length;
+    if (total > 0) {
+      const visible = Math.min(total, 16);
+      for (let i = 0; i < visible; i++) {
+        const seed  = (i * 1664525 + 1013904223) & 0xffff;
+        const t     = (seed % 1000) / 1000;
+        const angle = (((seed >> 4) & 0xffff) / 0xffff - 0.5) * 0.7;
+        const fx    = dX - 11 + t * 22;
+        const fy    = dY + 6 - Math.floor(i / 3) * 4; // pile grows upward, overflow after 3
+        const f     = S.sessionFish[i];
+        const color = f.rare ? '#ffd700' : (f.color || '#e06030');
+        ctx.save();
+        ctx.translate(Math.round(fx), Math.round(fy));
+        ctx.rotate(angle);
+        ctx.fillStyle = color;
+        ctx.fillRect(-5, -2, 10, 3);  // body
+        ctx.fillRect(-8, -3,  4, 2);  // tail top
+        ctx.fillRect(-8,  1,  4, 2);  // tail bottom
+        ctx.fillStyle = '#00000066';
+        ctx.fillRect(-2, -1,  2, 2);  // eye
+        ctx.restore();
+      }
+    }
+
+    // Hull (drawn over bottom of pile so it looks contained)
+    px(dX - 14, dY,      28, 3, '#5a3e28');
+    px(dX - 15, dY + 3,  30, 5, '#7a5535');
+    px(dX - 14, dY + 8,  28, 3, '#5a3e28');
+    px(dX - 15, dY - 2,  30, 3, '#9a7248'); // rim
+  }
 
   // Hull — unique shape per boat cosmetic
   const boat = S.cosmetics.boat || 'wood';
@@ -1752,6 +1946,34 @@ function drawBoat(W, wY) {
     px(bX + 25, bY - P,    5, P,   hc1);
   }
 
+  // Bow lantern (front/cast side)
+  {
+    const phase = getDayPhase();
+    const nightT = phase < 0.25 ? 1 - phase / 0.25
+                 : phase > 0.75 ? (phase - 0.75) / 0.25
+                 : 0;
+    const flicker = nightT > 0.05
+      ? 0.85 + 0.15 * Math.sin(Date.now() / 120 + Math.sin(Date.now() / 47))
+      : 1;
+    const bowX = facingLeft ? bX - 22 : bX + 18;
+    px(bowX + 1, bY - 6, 2, 6, '#6a4a20');
+    px(bowX,     bY - 9, 5, 5, '#c8a030');
+    px(bowX + 1, bY - 8, 3, 3, nightT > 0.1 ? '#ffee88' : '#888840');
+    px(bowX - 1, bY -11, 7, 2, '#6a4a20');
+    if (nightT > 0.05) {
+      ctx.save();
+      ctx.shadowColor = '#ffcc44';
+      ctx.shadowBlur  = Math.round(28 * nightT * flicker);
+      ctx.globalAlpha = 0.85 * nightT * flicker;
+      ctx.fillStyle   = '#ffee88';
+      ctx.beginPath(); ctx.arc(bowX + 2, bY - 7, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur  = 0;
+      ctx.globalAlpha = 0.14 * nightT * flicker;
+      ctx.beginPath(); ctx.ellipse(bowX + 2, bY + P * 2, 20, 5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
   // Character
   px(cX,     cY + 10, 10, 9,  '#3a3a6a'); // body
   px(cX - 2, cY,      14, 12, '#f5e6d0'); // head
@@ -1763,9 +1985,9 @@ function drawBoat(W, wY) {
   const mouthX  = facingLeft ? cX + 1 : cX + 5;
 
   if (S.mood === 'sleepy') {
-    // Fully closed — heavy horizontal lines
-    px(eyeNear, cY + 6, 4, 1, '#1a1a2e');
-    px(eyeFar,  cY + 6, 3, 1, '#1a1a2e');
+    // Fully closed — two separate fine lines, fixed positions with clear gap
+    px(cX + 1, cY + 5, 3, 1, '#000000');
+    px(cX + 7, cY + 5, 3, 1, '#000000');
   } else if (S.mood === 'focused') {
     // Wide open, no blink — alert, near eye bigger for 3D feel
     px(eyeNear, cY + 3, 3, 3, '#1a1a2e');
@@ -1787,7 +2009,12 @@ function drawBoat(W, wY) {
   }
 
   // Mouth — shifted toward cast side
-  if (S.mood === 'focused') {
+  if (S.smileTimer > 0) {
+    // Curved smile — corners up, middle lower = ∪ shape
+    px(mouthX,     cY + 9,  1, 1, '#c0846a'); // left corner up
+    px(mouthX + 5, cY + 9,  1, 1, '#c0846a'); // right corner up
+    px(mouthX + 1, cY + 10, 4, 1, '#c0846a'); // middle lower
+  } else if (S.mood === 'focused') {
     // Tight determined line
     px(mouthX, cY + 9, 5, 1, '#c0846a');
   } else if (S.mood === 'sleepy') {
@@ -1931,6 +2158,35 @@ function drawBoat(W, wY) {
     ctx.globalAlpha = 1;
   }
 
+  // Night lantern area illumination — additive glow that brightens boat/character/water
+  {
+    const phase = getDayPhase();
+    const nightT = phase < 0.25 ? 1 - phase / 0.25
+                 : phase > 0.75 ? (phase - 0.75) / 0.25
+                 : 0;
+    if (nightT > 0.05) {
+      const flicker = 0.88 + 0.12 * Math.sin(Date.now() / 130 + Math.sin(Date.now() / 53));
+      const strength = nightT * flicker;
+      const bowX  = (facingLeft ? bX - 19 : bX + 21);
+      const lightY = bY - 7;
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+
+      const g1 = ctx.createRadialGradient(bowX, lightY, 0, bowX, lightY, 300);
+      g1.addColorStop(0,   `rgba(255, 230, 140, ${0.88 * strength})`);
+      g1.addColorStop(0.15, `rgba(255, 215, 100, ${0.62 * strength})`);
+      g1.addColorStop(0.35, `rgba(255, 185, 55,  ${0.38 * strength})`);
+      g1.addColorStop(0.6, `rgba(255, 150, 20,  ${0.18 * strength})`);
+      g1.addColorStop(0.85, `rgba(255, 110, 5,  ${0.07 * strength})`);
+      g1.addColorStop(1,   'rgba(255, 80, 0, 0)');
+      ctx.fillStyle = g1;
+      ctx.beginPath(); ctx.ellipse(bowX, lightY + 20, 300, 200, 0, 0, Math.PI * 2); ctx.fill();
+
+      ctx.restore();
+    }
+  }
+
   // Rod — flips with character direction, swings during cast animation
   let swingOffset = 0;
   if (S.castAnim) {
@@ -1956,6 +2212,7 @@ function drawBoat(W, wY) {
   px(rTX - 1, rTY - 1, 2, 2, '#a09070');
 
   S._tip = { x: rTX, y: rTY };
+
 }
 
 function drawLine(wY) {
@@ -2172,6 +2429,15 @@ function drawFish(f, wY) {
 
   ctx.globalAlpha = Math.min(1, f.progress * 4 + 0.2);
 
+  // Flip horizontally when facing right (default sprite faces left)
+  ctx.save();
+  if (f.facingLeft === false) {
+    const fishCenterX = x + P * 4;
+    ctx.translate(fishCenterX, 0);
+    ctx.scale(-1, 1);
+    ctx.translate(-fishCenterX, 0);
+  }
+
   switch (f.type) {
 
     case 'fish': {
@@ -2274,6 +2540,8 @@ function drawFish(f, wY) {
 
   ctx.globalAlpha = 1;
 
+  ctx.restore(); // undo fish facing flip
+
   // Label shows while reeling
   if (f.phase === 'reeling' && f.progress > 0.3) {
     ctx.fillStyle = f.color;
@@ -2287,6 +2555,39 @@ function drawFish(f, wY) {
     ctx.globalAlpha = 1;
     ctx.textAlign = 'left';
   }
+}
+
+const THINKING_PHRASES = [
+  'angling', 'trolling', 'jigging', 'trawling', 'casting',
+  'drowning worms', 'wetting a line', 'tempting the deep',
+  'negotiating with fish', 'communing with fish',
+  'baiting the abyss', 'wooing the water',
+  'sending an invitation', 'chasing fins',
+  'consulting the depths', 'hook diplomacy',
+  'aquatic ambush', 'sub-surface networking',
+  'bottom feeding (respectfully)', 'deep sea vibing',
+  'fish whispering', 'underwater cold outreach',
+  'deploying worm', 'spearfishing (figuratively)',
+  'luring', 'seducing fish',
+];
+
+function drawThinkingText(W, wY) {
+  const fishing = S.activeFish.length > 0 || S.fishQueue.length > 0 || S.catchCooldown > 0;
+  if (!fishing) return;
+
+  const bX = W * 0.44;
+  const textY = wY + 90;
+  const phrase = S.activeFish.length > 0 ? S.activeFish[0].thought : null;
+  if (!phrase) return;
+  const alpha = 0.75;
+
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.75;
+  ctx.font = 'italic 12px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(phrase, bX, textY);
+  ctx.restore();
 }
 
 function drawParticles() {
@@ -2329,13 +2630,22 @@ function loop() {
   // Mood
   const idleSec = (Date.now() - S.lastActivity) / 1000;
   const prevMood = S.mood;
-  if (S.isActive)       S.mood = 'focused';
+  if (S.isActive || S.activeFish.length > 0 || S.fishQueue.length > 0 || S.catchCooldown > 0) S.mood = 'focused';
   else if (idleSec > 60) S.mood = 'sleepy';
   else                   S.mood = 'idle';
   if (S.mood !== prevMood) updateStats();
 
   // Ease bobber dip back to 0
   if (S.bobberDip > 0) S.bobberDip = Math.max(0, S.bobberDip - 0.4);
+  if (S.smileTimer > 0) S.smileTimer--;
+  if (S.catchCooldown > 0) S.catchCooldown--;
+
+  // Drain queue — process next event when pond is clear
+  if (S.activeFish.length === 0 && S.catchCooldown === 0 && S.fishQueue.length > 0) {
+    const next = S.fishQueue.shift();
+    if (next.type === 'cast') doCast();
+    else if (next.type === 'fish') spawnFish(next.tool);
+  }
   if (S.lureSplash > 0) S.lureSplash--;
 
   // Cast animation state machine
@@ -2364,18 +2674,16 @@ function loop() {
     if (f.phase === 'reeling') S.reelProgress = Math.max(S.reelProgress, f.progress);
   }
 
-  // Compute bobber position for this frame — whole rig rises when reeling
+  // Compute bobber position for this frame — whole rig reels toward rod tip
   {
     const tipY   = S._tip ? S._tip.y : 0;
     const tipX   = S._tip ? S._tip.x : 0;
-    const wobble = Math.sin(S.t * 0.02) * 3;
-    const baseX  = Math.max(55, Math.min(W - 55, tipX + S.cast.offset + wobble));
+    const wobble = Math.sin(S.t * 0.02) * 3 * (1 - S.reelProgress); // wobble fades as line tightens
+    const castX  = Math.max(55, Math.min(W - 55, tipX + S.cast.offset));
     const baseY  = wY - 3 + Math.sin(S.t * 0.03) * 2 + S.bobberDip;
-    const reelTop = tipY + 30;
-    S._bobberX = baseX;
-    S._bobberY = S.reelProgress > 0
-      ? baseY + (reelTop - baseY) * S.reelProgress
-      : baseY;
+    // Bobber stays at the waterline — fish rises from depth as depthLine shrinks
+    S._bobberX = castX + (tipX - castX) * S.reelProgress + wobble;
+    S._bobberY = baseY;
   }
 
   // Fish state machine
@@ -2399,8 +2707,10 @@ function loop() {
         }
         sounds.bite();
       } else {
-        f.x += (dx / dist) * speed;
-        f.y += (dy / dist) * speed;
+        const newX = f.x + (dx / dist) * speed;
+        const newY = f.y + (dy / dist) * speed;
+        if (Math.abs(newX - f.x) > 0.3) f.facingLeft = newX < f.x;
+        f.x = newX; f.y = newY;
       }
     }
 
@@ -2422,6 +2732,8 @@ function loop() {
         f.progress = 0;
         S.bobberDip = 0;
         S.lureSplash = 0;
+        // Lock facing direction for reel — fish faces toward the rod
+        if (S._tip) f.facingLeft = f.x > S._tip.x;
       }
     }
 
@@ -2429,33 +2741,32 @@ function loop() {
       // Fish struggles harder as it nears the boat
       const struggle = f.progress;
       const fightBack = Math.random() < struggle * 0.15;
-      f.progress += fightBack ? -0.002 : (0.005 + Math.random() * 0.003);
+      f.progress += fightBack ? -0.004 : (0.010 + Math.random() * 0.006);
       f.progress = Math.max(0, f.progress);
       const wobbleAmp = 3 + struggle * 7;
 
       if (f.isLure) {
-        // Lure mode: drag fish horizontally along the surface toward the boat
-        const boatX = canvas.width * 0.44;
-        const targetX = f.reelStartX + (boatX - f.reelStartX) * f.progress
-          + Math.sin(S.t * (0.04 + struggle * 0.05) + i * 1.8) * wobbleAmp;
-        f.x += (targetX - f.x) * 0.12;
-        f.y = S._wY + 6 + Math.sin(S.t * 0.08 + i) * 3; // stays at surface, slight bob
+        // Lure mode: fish follows lure exactly, stays at surface
+        f.x = S._bobberX;
+        f.y = S._wY + 6 + Math.sin(S.t * 0.08 + i) * 3;
       } else {
-        // Bobber mode: pull fish up from depth
+        // Bobber mode: fish follows bobber exactly, rises from depth
         const depthLine = S.cast.depthLine * (1 - f.progress * 0.95);
-        const targetX = S._bobberX + Math.sin(S.t * (0.04 + struggle * 0.05) + i * 1.8) * wobbleAmp;
-        f.x += (targetX - f.x) * 0.12;
+        f.x = S._bobberX;
         f.y = S._bobberY + Math.max(4, depthLine);
       }
 
       if (f.progress >= 1) {
         const phase = getDayPhase();
         const atNight = phase < 0.22 || phase > 0.72;
-        S.fishCaught.push({ type: f.type, label: f.label, rare: f.rare, atNight, ts: Date.now() });
+        S.fishCaught.push({ type: f.type, label: f.label, rare: f.rare, color: f.color, atNight, ts: Date.now() });
+        S.sessionFish.push({ color: f.color, rare: f.rare });
         S.activeFish.splice(i, 1);
         const catchX = f.x;
         const catchY = S._wY - P * 4;
         sounds.catch();
+        S.smileTimer = 120; // ~2 seconds at 60fps
+        S.catchCooldown = 150; // wait for particles + text to finish before next fish
         const xpAmt = f.rare ? 50 : 15;
         const coinAmt = f.rare ? 15 + Math.floor(Math.random() * 6) : 1 + Math.floor(Math.random() * 3);
         addCoins(coinAmt);
@@ -2487,12 +2798,18 @@ function loop() {
   // Draw
   ctx.clearRect(0, 0, W, H);
 
-  // Apply zoom centred on the boat
-  if (S.zoom !== 1.0) {
-    const zCX = W * 0.5, zCY = H * 0.52;
+  // Apply zoom + pan
+  const zCX = W * 0.5, zCY = H * 0.52;
+  const z = S.zoom;
+  // Clamp pan to game bounds
+  const maxPanX = (z - 1) * zCX;
+  const maxPanY = (z - 1) * zCY;
+  S.panX = Math.max(-maxPanX, Math.min(maxPanX, S.panX || 0));
+  S.panY = Math.max(-(z - 1) * (H - zCY), Math.min(maxPanY, S.panY || 0));
+  if (z !== 1.0 || S.panX || S.panY) {
     ctx.save();
-    ctx.translate(zCX, zCY);
-    ctx.scale(S.zoom, S.zoom);
+    ctx.translate(zCX + S.panX, zCY + S.panY);
+    ctx.scale(z, z);
     ctx.translate(-zCX, -zCY);
   }
 
@@ -2500,12 +2817,13 @@ function loop() {
   drawWater(W, H, wY);
   drawBoat(W, wY);
   drawLine(wY);
-  if (S.mood !== 'idle' && S.mood !== 'sleepy') for (const f of S.activeFish) drawFish(f, wY);
+  for (const f of S.activeFish) drawFish(f, wY);
+  drawThinkingText(W, wY);
   drawParticles();
   drawFloatingTexts();
   drawLevelUpFlash(W, H);
 
-  if (S.zoom !== 1.0) ctx.restore();
+  if (z !== 1.0 || S.panX || S.panY) ctx.restore();
 
   // Zoom indicator (top-left, subtle)
   if (Math.abs(S.zoom - 1.0) > 0.05) {
@@ -2517,11 +2835,24 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-// Zoom via scroll wheel on the canvas
+// Zoom via scroll wheel — min 1.0 so you can never zoom out past game view
 canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
-  S.zoom = Math.max(0.7, Math.min(2.5, S.zoom + (e.deltaY > 0 ? -0.1 : 0.1)));
+  S.zoom = Math.max(1.0, Math.min(2.5, S.zoom + (e.deltaY > 0 ? -0.1 : 0.1)));
+  if (S.zoom === 1.0) { S.panX = 0; S.panY = 0; }
 }, { passive: false });
+
+// Pan via mouse drag when zoomed in
+let _drag = null;
+canvas.addEventListener('mousedown', (e) => {
+  if (S.zoom > 1.0) _drag = { sx: e.clientX, sy: e.clientY, px: S.panX || 0, py: S.panY || 0 };
+});
+window.addEventListener('mousemove', (e) => {
+  if (!_drag) return;
+  S.panX = _drag.px + (e.clientX - _drag.sx);
+  S.panY = _drag.py + (e.clientY - _drag.sy);
+});
+window.addEventListener('mouseup', () => { _drag = null; });
 
 // init clouds once canvas is sized
 initClouds(canvas.width || 460);

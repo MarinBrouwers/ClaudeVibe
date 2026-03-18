@@ -17,7 +17,7 @@
       --border-acc:   #2a2a5a;
       --text:         #c0c0e8;
       --text2:        #8888bb;
-      --text3:        #5050a0;
+      --text3:        #7878b8;
       --text4:        #3a3a5a;
       --accent:       #4a8fff;
       --accent-dim:   #4a8fff55;
@@ -540,8 +540,10 @@
     <button id="btn-lib"       data-tip="Fish Library">🐟</button>
     <div style="flex:1"></div>
     <button id="btn-theme"     data-tip="Toggle Theme">☀️</button>
-    <button id="btn-mute"      data-tip="Toggle FX" class="active">🔊</button>
-    <button id="btn-music"     data-tip="Toggle Music">🎵</button>
+    <button id="btn-mute"       data-tip="Toggle FX" class="active">🔊</button>
+    <button id="btn-music"      data-tip="Toggle Music">🎵</button>
+    <button id="btn-next-track" data-tip="Next Track" style="display:none">⏭</button>
+    <span   id="music-track-name" style="font-size:9px; color:var(--text2); letter-spacing:0.05em; white-space:nowrap;"></span>
   </div>
 </div>
 <script src="node_modules/tone/build/Tone.js"></script>
