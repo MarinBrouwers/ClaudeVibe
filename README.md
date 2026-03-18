@@ -122,6 +122,28 @@ Items unlock at higher levels — check the `LVL X` badge on each item.
 
 ---
 
+## Changelog
+
+### v1.2.0 — Dinghy & polish update
+- **Dinghy trailing boat** — a small boat hangs on a rope behind you; caught fish pile up inside it
+- **Session fish pile** — fish accumulate in the dinghy during your session and clear on restart; the pile grows upward above the rim as more fish are caught
+- **Fish queue system** — tool calls are queued so no fish are ever lost; cast → fish → fish → cast order is preserved
+- **Thinking phrases** — funny fishing synonyms appear underwater while Claude is working (one per fish): *"hook diplomacy"*, *"underwater cold outreach"*, *"fish whispering"*, and more
+- **Full rig animation** — line, bobber, and lure all reel in together toward the rod tip on catch
+- **Fish facing direction** — fish now always face the correct direction and don't flip while reeling
+- **Bobber stays at waterline** — fish reel in from depth, never pulled out of the water
+- **Doubled reel speed** — fish come in faster
+- **Brighter lamp** — the bow lamp now illuminates a wider area at night
+- **Ripple cap** — boat ripples no longer overlap the dinghy
+
+### v1.1.0 — Initial public release
+- Pixel art fishing game reacting to Claude Code tool use
+- Day/night cycle, shop, achievements, daily challenges
+- Lures, bobbers, hats, boats, rods cosmetics
+- Dark/light theme toggle
+
+---
+
 ## License
 
 [PolyForm Noncommercial 1.0.0](LICENSE) — free for personal and non-commercial use. Contact me for commercial licensing.

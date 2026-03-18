@@ -1784,11 +1784,16 @@ function drawBoat(W, wY) {
     const total = S.sessionFish.length;
     if (total > 0) {
       const visible = Math.min(total, 16);
+      // Clip to hull width so fish never stick out the sides
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(dX - 18, dY - 90, 36, 102); // wide enough for hull, tall enough for pile
+      ctx.clip();
       for (let i = 0; i < visible; i++) {
         const seed  = (i * 1664525 + 1013904223) & 0xffff;
         const t     = (seed % 1000) / 1000;
         const angle = (((seed >> 4) & 0xffff) / 0xffff - 0.5) * 0.7;
-        const fx    = dX - 11 + t * 22;
+        const fx    = dX - 12 + t * 24;
         const fy    = dY + 6 - Math.floor(i / 3) * 4; // pile grows upward, overflow after 3
         const f     = S.sessionFish[i];
         const color = f.rare ? '#ffd700' : (f.color || '#e06030');
@@ -1803,13 +1808,14 @@ function drawBoat(W, wY) {
         ctx.fillRect(-2, -1,  2, 2);  // eye
         ctx.restore();
       }
+      ctx.restore();
     }
 
     // Hull (drawn over bottom of pile so it looks contained)
-    px(dX - 14, dY,      28, 3, '#5a3e28');
-    px(dX - 15, dY + 3,  30, 5, '#7a5535');
-    px(dX - 14, dY + 8,  28, 3, '#5a3e28');
-    px(dX - 15, dY - 2,  30, 3, '#9a7248'); // rim
+    px(dX - 17, dY,      34, 3, '#5a3e28');
+    px(dX - 18, dY + 3,  36, 5, '#7a5535');
+    px(dX - 17, dY + 8,  34, 3, '#5a3e28');
+    px(dX - 18, dY - 2,  36, 3, '#9a7248'); // rim
   }
 
   // Hull — unique shape per boat cosmetic
