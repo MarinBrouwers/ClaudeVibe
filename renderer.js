@@ -1638,8 +1638,11 @@ const S = {
   panY: 0,
   smileTimer: 0,
   catchCooldown: 0, // frames to wait after catch before next fish can spawn
-  toolQuip: { text: '', timer: 0 }, // speech bubble quip triggered by tool use
   sessionFish: [],  // fish caught this session only — cleared on restart
+  milestonesReached: [],
+  hourGoal: 8 + Math.floor(Math.random() * 8), // target fish this hour
+  hourStart: Date.now(),
+  hourFish: 0,
   fishQueue: [],    // queued events: { type: 'cast' } or { type: 'fish', tool }
   theme: 'dark',
 };
@@ -1656,6 +1659,7 @@ async function loadSave() {
     if (d.cosmetics) S.cosmetics = { ...S.cosmetics, ...d.cosmetics };
     if (d.cosmeticsPurchased) S.cosmeticsPurchased = d.cosmeticsPurchased;
     S.fishCaught       = d.fishCaught       || [];
+    S.milestonesReached = d.milestonesReached || [];
     S.questsCompleted  = d.questsCompleted  || [];
     if (d.dailyChallenges && d.dailyChallenges.date === todayStr()) {
       S.dailyChallenges = d.dailyChallenges;
@@ -1691,7 +1695,7 @@ async function saveToDisk() {
     coins: S.coins,
     cosmetics: S.cosmetics,
     cosmeticsPurchased: S.cosmeticsPurchased,
-    fishCaught: S.fishCaught, questsCompleted: S.questsCompleted,
+    fishCaught: S.fishCaught, milestonesReached: S.milestonesReached, questsCompleted: S.questsCompleted,
     dailyChallenges: dc, theme: S.theme,
   });
 }
@@ -1807,11 +1811,6 @@ function doCast() {
 }
 
 function spawnFish(toolName) {
-  // Occasional muttered quip — roughly 1 in 7 fish
-  if (Math.random() < 1 / 7) {
-    const quips = TOOL_QUIPS[toolName] || DEFAULT_QUIPS;
-    S.toolQuip = { text: quips[Math.floor(Math.random() * quips.length)], timer: 220 };
-  }
   const def  = fishForTool(toolName);
   const rare = Math.random() < 0.05;
   const W    = canvas.width;
@@ -1854,6 +1853,17 @@ function celebrate() {
 }
 
 let levelUpFlash = 0;
+let milestoneFlash = { timer: 0, text: '', coins: 0 };
+
+const MILESTONES = [
+  { count: 10,   coins: 25,   label: '10 fish!' },
+  { count: 25,   coins: 50,   label: '25 fish!' },
+  { count: 50,   coins: 100,  label: '50 fish!' },
+  { count: 100,  coins: 200,  label: '100 fish!' },
+  { count: 250,  coins: 400,  label: '250 fish!' },
+  { count: 500,  coins: 750,  label: '500 fish!' },
+  { count: 1000, coins: 1500, label: '1000 fish!!' },
+];
 function flashLevelUp() {
   levelUpFlash = 90;
 }
@@ -2639,36 +2649,26 @@ function drawBoat(W, wY) {
     }
     ctx.globalAlpha = 1;
   } else if (S.mood === 'focused') {
-    // Pixel-art speech bubble — shows tool quip or default !
-    const quipActive = S.toolQuip.timer > 0;
-    const quipText   = quipActive ? S.toolQuip.text : '!';
-    ctx.font = quipActive ? 'italic 9px Courier New' : 'bold 10px Courier New';
-    const textW = ctx.measureText(quipText).width;
-    const bw = Math.max(16, Math.round(textW + 10));
-    const bh = 14;
-    const bx = cX + 12, by = cY - 32;
-    const fadeAlpha = quipActive ? Math.min(1, S.toolQuip.timer / 30) : 1;
-    ctx.globalAlpha = (0.9 + Math.sin(S.t * 0.1) * 0.1) * fadeAlpha;
-    // Bubble body
+    // Pixel-art speech bubble
+    const bx = cX + 12, by = cY - 32, bw = 16, bh = 14;
+    ctx.globalAlpha = 0.9 + Math.sin(S.t * 0.1) * 0.1;
     ctx.fillStyle = '#f0eeff';
     ctx.fillRect(bx, by, bw, bh);
-    // Border
     ctx.fillStyle = '#9090dd';
     ctx.fillRect(bx,          by,          bw, 1);
     ctx.fillRect(bx,          by + bh - 1, bw, 1);
     ctx.fillRect(bx,          by,          1,  bh);
     ctx.fillRect(bx + bw - 1, by,          1,  bh);
-    // Tail
     ctx.fillStyle = '#f0eeff';
     ctx.fillRect(bx + 3, by + bh,     4, 2);
     ctx.fillRect(bx + 3, by + bh + 2, 2, 1);
     ctx.fillStyle = '#9090dd';
     ctx.fillRect(bx + 3, by + bh,     1, 2);
     ctx.fillRect(bx + 6, by + bh,     1, 2);
-    // Text
-    ctx.fillStyle = quipActive ? '#2c3e50' : '#e67e22';
+    ctx.font = 'bold 10px Courier New';
+    ctx.fillStyle = '#e67e22';
     ctx.textAlign = 'center';
-    ctx.fillText(quipText, bx + bw / 2, by + bh - 3);
+    ctx.fillText('!', bx + bw / 2, by + bh - 3);
     ctx.textAlign = 'left';
     ctx.globalAlpha = 1;
   } else if (S.mood === 'sleepy') {
@@ -2750,6 +2750,8 @@ function drawBoat(W, wY) {
 
   S._tip = { x: rTX, y: rTY };
 
+  // Hourly goal banner — drawn above the character's head
+  drawHourlyBanner(canvas.width, cX, cY);
 }
 
 function drawLine(wY) {
@@ -3094,22 +3096,6 @@ function drawFish(f, wY) {
   }
 }
 
-const TOOL_QUIPS = {
-  Read:      ['light reading', 'page turner', 'absorbing...', 'reading again?'],
-  Write:     ['manifesting...', 'putting it down', 'scribbling', 'ink is wet'],
-  Edit:      ['minor surgery', 'one sec...', 'tweaking...', 'almost perfect'],
-  Bash:      ['yolo...', 'fingers crossed', 'running it', 'no sudo tho'],
-  Grep:      ['ctrl+F irl', 'needle & haystack', 'looking...', 'found it!'],
-  Glob:      ['casting wide', 'scanning...', 'where is it...'],
-  WebFetch:  ['going online', 'dial-up noises', 'buffering...', 'web surfing'],
-  WebSearch: ['googling it', 'asking the web', 'brb wiki'],
-  Task:      ['outsourcing', 'delegating', 'subcontracting', 'not my problem'],
-  Agent:     ['phoning a friend', 'calling backup', 'bringing help'],
-  TodoWrite: ['making a list', 'very organized', 'sticky note time'],
-  NotebookEdit: ['jupyter things', 'science!', 'data wrangling'],
-};
-const DEFAULT_QUIPS = ['on it', 'hm...', 'interesting', 'working...', 'doing stuff', 'uh huh', 'mhm...', 'sure sure'];
-
 const THINKING_PHRASES = [
   'angling', 'trolling', 'jigging', 'trawling', 'casting',
   'drowning worms', 'wetting a line', 'tempting the deep',
@@ -3171,6 +3157,77 @@ function drawLevelUpFlash(W, H) {
   }
 }
 
+function drawMilestoneFlash(W, H) {
+  if (milestoneFlash.timer <= 0) return;
+  milestoneFlash.timer--;
+  const t = milestoneFlash.timer;
+  const fadeIn  = Math.min(1, (220 - t) / 20);
+  const fadeOut = Math.min(1, t / 40);
+  const alpha   = Math.min(fadeIn, fadeOut);
+
+  // Gold screen wash
+  ctx.globalAlpha = alpha * 0.28;
+  ctx.fillStyle = '#ffd700';
+  ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = 1;
+
+  if (t > 30) {
+    const scale = 1 + Math.sin((220 - t) * 0.15) * 0.04; // slight pulse
+    ctx.save();
+    ctx.translate(W / 2, H / 2 - 20);
+    ctx.scale(scale, scale);
+    ctx.textAlign = 'center';
+    // Shadow
+    ctx.globalAlpha = alpha * 0.9;
+    ctx.fillStyle = '#7a5500';
+    ctx.font = 'bold 16px Courier New';
+    ctx.fillText(milestoneFlash.text, 2, 2);
+    // Gold text
+    ctx.fillStyle = '#ffd700';
+    ctx.fillText(milestoneFlash.text, 0, 0);
+    // Coins subtext
+    ctx.font = 'bold 10px Courier New';
+    ctx.fillStyle = '#ffe566';
+    ctx.fillText(`+${milestoneFlash.coins} 🪙`, 0, 18);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    ctx.textAlign = 'left';
+  }
+}
+
+function drawHourlyBanner(W, cX, cY) {
+  const goal    = S.hourGoal;
+  const current = Math.min(S.hourFish, goal);
+  const pct     = current / goal;
+  const done    = pct >= 1;
+  const label   = `⚡ ${current} / ${goal} fish this hour`;
+
+  ctx.font = 'bold 10px Courier New';
+  const textW = ctx.measureText(label).width;
+  const bW = textW + 16;
+  const bH = 18;
+  const bX = Math.round(cX - bW / 2 + 5);
+  const bY = cY - 68;
+
+  // Background
+  ctx.globalAlpha = 0.88;
+  ctx.fillStyle = '#0a0e1e';
+  ctx.fillRect(bX, bY, bW, bH);
+  // Progress fill
+  ctx.fillStyle = done ? '#2ecc71' : '#4a8fff';
+  ctx.fillRect(bX, bY + bH - 4, Math.round(bW * pct), 4);
+  // Border
+  ctx.strokeStyle = done ? '#2ecc71' : '#2a3a6a';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(bX + 0.5, bY + 0.5, bW - 1, bH - 1);
+  // Text
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = done ? '#2ecc71' : '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, bX + bW / 2, bY + bH - 6);
+  ctx.textAlign = 'left';
+}
+
 // ── Game loop ─────────────────────────────────────────────────────────────────
 
 function loop() {
@@ -3192,7 +3249,6 @@ function loop() {
   if (S.bobberDip > 0) S.bobberDip = Math.max(0, S.bobberDip - 0.4);
   if (S.smileTimer > 0) S.smileTimer--;
   if (S.catchCooldown > 0) S.catchCooldown--;
-  if (S.toolQuip.timer > 0) S.toolQuip.timer--;
 
   // Drain queue — process next event when pond is clear
   if (S.activeFish.length === 0 && S.catchCooldown === 0 && S.fishQueue.length > 0) {
@@ -3315,6 +3371,34 @@ function loop() {
         const atNight = phase < 0.22 || phase > 0.72;
         S.fishCaught.push({ type: f.type, label: f.label, rare: f.rare, color: f.color, atNight, ts: Date.now() });
         S.sessionFish.push({ color: f.color, rare: f.rare });
+
+        // Milestone check
+        const total = S.fishCaught.length;
+        for (const m of MILESTONES) {
+          if (total === m.count && !S.milestonesReached.includes(m.count)) {
+            S.milestonesReached.push(m.count);
+            milestoneFlash = { timer: 220, text: m.label, coins: m.coins };
+            addCoins(m.coins);
+            spawnFloatingText(`+${m.coins}🪙`, W * 0.5, wY - 60, '#ffd700', true);
+            sounds.levelUp();
+          }
+        }
+
+        // Hourly goal check — reset if an hour has passed
+        if (Date.now() - S.hourStart > 3600000) {
+          S.hourStart = Date.now();
+          S.hourFish = 0;
+          S.hourGoal = 8 + Math.floor(Math.random() * 10);
+        }
+        S.hourFish++;
+        if (S.hourFish >= S.hourGoal) {
+          const bonus = S.hourGoal * 4;
+          addCoins(bonus);
+          spawnFloatingText(`hourly goal! +${bonus}🪙`, W * 0.5, wY - 80, '#2ecc71', true);
+          S.hourStart = Date.now();
+          S.hourFish = 0;
+          S.hourGoal = 8 + Math.floor(Math.random() * 10);
+        }
         S.activeFish.splice(i, 1);
         const catchX = f.x;
         const catchY = S._wY - P * 4;
@@ -3376,6 +3460,7 @@ function loop() {
   drawParticles();
   drawFloatingTexts();
   drawLevelUpFlash(W, H);
+  drawMilestoneFlash(W, H);
 
   if (z !== 1.0 || S.panX || S.panY) ctx.restore();
 
