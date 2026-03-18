@@ -2395,7 +2395,7 @@ function drawBoat(W, wY) {
       ? 0.85 + 0.15 * Math.sin(Date.now() / 120 + Math.sin(Date.now() / 47))
       : 1;
     // Some boats skip the wooden lantern — they have their own aesthetics
-    if (boat === 'bathtub' || boat === 'cardboard' || boat === 'ufo') return;
+    if (!(boat === 'bathtub' || boat === 'cardboard' || boat === 'ufo')) {
     // Duck boat: lamp mounts on stern (duck head occupies the bow)
     const bowX = boat === 'duck'
       ? (facingLeft ? bX + 18 : bX - 22)
@@ -2416,9 +2416,12 @@ function drawBoat(W, wY) {
       ctx.beginPath(); ctx.ellipse(bowX + 2, bY + P * 2, 20, 5, 0, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
+    } // end lamp skip
   }
 
-  // Character
+  // Character — hidden on enclosed/crewed vessels
+  const hideCharacter = boat === 'cardboard' || boat === 'submarine' || boat === 'ufo';
+  if (!hideCharacter) {
   px(cX,     cY + 10, 10, 9,  '#3a3a6a'); // body
   px(cX - 2, cY,      14, 12, '#f5e6d0'); // head
 
@@ -2692,6 +2695,7 @@ function drawBoat(W, wY) {
     }
     ctx.globalAlpha = 1;
   }
+  } // end hideCharacter
 
   // Night lantern area illumination — additive glow that brightens boat/character/water
   {
