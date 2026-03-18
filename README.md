@@ -124,6 +124,20 @@ Items unlock at higher levels — check the `LVL X` badge on each item.
 
 ## Changelog
 
+### v1.4.0 — Milestones, hourly goals & polish
+
+**Milestone fanfare** — hitting 10 / 25 / 50 / 100 / 250 / 500 / 1000 fish triggers a gold screen flash and a coin reward. Each milestone fires once and is saved.
+
+**Hourly goal banner** — a small bar at the top of the screen shows your fish progress toward an hourly target (8–18 fish). Completing it earns a coin bonus (goal × 4). The goal resets each hour or when completed.
+
+**Shop UX** — can't-afford items now show in red with exact shortfall ("need 42 more 🪙") instead of greying out.
+
+**Chat bubble cleanup** — removed random tool-specific quips; bubble now shows a simple `!` when the fisherman is focused.
+
+**Dead code removed** — TOOL_QUIPS, DEFAULT_QUIPS, and toolQuip state cleaned up.
+
+---
+
 ### v1.3.0 — Cosmetics overhaul, buddies & polish
 
 **New cosmetics — 30+ items across all categories, redistributed across levels 1–20:**
@@ -137,7 +151,7 @@ Items unlock at higher levels — check the `LVL X` badge on each item.
 - **BUDDY** — a companion that swims near your boat (Cat, Dog, Duck, Garden Gnome, Parrot). Each has unique animations: dog paddles, duck floats, parrot hovers with flapping wings, cat reluctantly swims, gnome clings to a log
 - **WATER** — reskin the pond: Earl Grey, Lava Pond, Slime Pit, Galaxy Water
 
-**Fisherman chat bubbles** — occasionally mutters a tool-specific quip above his head ("ctrl+F irl" for Grep, "yolo..." for Bash, etc.)
+**Fisherman chat bubbles** — shows `!` above his head when focused (quips removed for cleanliness)
 
 **Shop UX fixes:**
 - Can't-afford items now show clearly in red with exact shortfall ("need 42 more 🪙") instead of greying everything out

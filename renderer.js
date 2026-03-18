@@ -2751,7 +2751,7 @@ function drawBoat(W, wY) {
   S._tip = { x: rTX, y: rTY };
 
   // Hourly goal banner — drawn above the character's head
-  drawHourlyBanner(canvas.width, cX, cY);
+  drawHourlyBanner(canvas.width);
 }
 
 function drawLine(wY) {
@@ -3195,19 +3195,20 @@ function drawMilestoneFlash(W, H) {
   }
 }
 
-function drawHourlyBanner(W, cX, cY) {
+function drawHourlyBanner(W) {
   const goal    = S.hourGoal;
   const current = Math.min(S.hourFish, goal);
   const pct     = current / goal;
   const done    = pct >= 1;
-  const label   = `⚡ ${current} / ${goal} fish this hour`;
+  const reward  = goal * 4;
+  const label   = `Hourly Goal: ${current} / ${goal}  +${reward}🪙`;
 
   ctx.font = 'bold 10px Courier New';
   const textW = ctx.measureText(label).width;
-  const bW = textW + 16;
+  const bW = textW + 18;
   const bH = 18;
-  const bX = Math.round(cX - bW / 2 + 5);
-  const bY = cY - 68;
+  const bX = Math.round(W / 2 - bW / 2);
+  const bY = 8;
 
   // Background
   ctx.globalAlpha = 0.88;
@@ -3215,7 +3216,7 @@ function drawHourlyBanner(W, cX, cY) {
   ctx.fillRect(bX, bY, bW, bH);
   // Progress fill
   ctx.fillStyle = done ? '#2ecc71' : '#4a8fff';
-  ctx.fillRect(bX, bY + bH - 4, Math.round(bW * pct), 4);
+  ctx.fillRect(bX, bY + bH - 3, Math.round(bW * pct), 3);
   // Border
   ctx.strokeStyle = done ? '#2ecc71' : '#2a3a6a';
   ctx.lineWidth = 1;
@@ -3224,7 +3225,7 @@ function drawHourlyBanner(W, cX, cY) {
   ctx.globalAlpha = 1;
   ctx.fillStyle = done ? '#2ecc71' : '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText(label, bX + bW / 2, bY + bH - 6);
+  ctx.fillText(label, bX + bW / 2, bY + bH - 5);
   ctx.textAlign = 'left';
 }
 
